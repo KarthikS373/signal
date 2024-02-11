@@ -1,0 +1,14 @@
+{
+  "title": "",
+  "description": "",
+  "default_og": "/og/logo.png",
+  "website": "",
+  "twitter": {
+    "card": "summary",
+    "creator": "",
+    "size": {
+      "width": "400",
+      "height": "400"
+    }
+  }
+}
