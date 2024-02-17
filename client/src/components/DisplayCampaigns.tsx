@@ -3,11 +3,23 @@ import { v4 as uuidv4 } from "uuid"
 import FundCard from "@/components/FundCard"
 import { loader } from "@/assets"
 import { useRouter } from "next/router"
+import Image from "next/image"
 
-const DisplayCampaigns = ({ title, isLoading }) => {
+export interface Campaign {
+  owner: string
+  title: string
+  description: string
+  target: string
+  deadline: number
+  amountCollected: string
+  image: string
+  pId: number
+}
+
+const DisplayCampaigns = ({ title, isLoading }: { title: string; isLoading: boolean }) => {
   const router = useRouter()
 
-  const handleNavigate = (campaign) => {
+  const handleNavigate = (campaign: Campaign) => {
     router.push(`/campaign-details/${campaign.title}`)
   }
 
@@ -53,7 +65,11 @@ const DisplayCampaigns = ({ title, isLoading }) => {
         {!isLoading &&
           campaigns.length > 0 &&
           campaigns.map((campaign) => (
-            <FundCard key={uuidv4()} {...campaign} handleClick={() => handleNavigate(campaign)} />
+            <FundCard
+              key={uuidv4()}
+              campaign={campaign}
+              handleClick={() => handleNavigate(campaign)}
+            />
           ))}
       </div>
     </div>

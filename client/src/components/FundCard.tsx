@@ -1,18 +1,11 @@
 import React from "react"
 import { tagType, thirdweb } from "@/assets"
-import { daysLeft } from "../utils"
+import { daysLeft } from "@/utils"
 import Image from "next/image"
+import { Campaign } from "./DisplayCampaigns"
 
-const FundCard = ({
-  owner,
-  title,
-  description,
-  target,
-  deadline,
-  amountCollected,
-  image,
-  handleClick,
-}) => {
+const FundCard = ({ campaign, handleClick }: { campaign: Campaign; handleClick: () => void }) => {
+  const { owner, title, description, target, deadline, amountCollected, image } = campaign
   const remainingDays = daysLeft(deadline)
 
   return (

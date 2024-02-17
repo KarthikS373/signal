@@ -3,9 +3,23 @@ import Link from "next/link"
 import { logo, sun } from "@/assets"
 import { navlinks } from "@/data"
 import { useRouter } from "next/router"
-import Image from "next/image"
+import Image, { StaticImageData } from "next/image"
 
-const Icon = ({ styles, name, imgUrl, isActive, disabled, handleClick }) => (
+const Icon = ({
+  styles,
+  name,
+  imgUrl,
+  isActive,
+  disabled,
+  handleClick,
+}: {
+  styles?: string
+  name?: string
+  imgUrl: StaticImageData
+  isActive?: string
+  disabled?: boolean
+  handleClick?: () => void
+}) => (
   <div
     className={`w-[48px] h-[48px] rounded-[10px] ${
       isActive && isActive === name && "bg-[#2c2f32]"

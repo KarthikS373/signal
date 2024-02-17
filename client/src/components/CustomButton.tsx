@@ -1,6 +1,16 @@
-import React from 'react'
+import React from "react"
 
-const CustomButton = ({ btnType, title, handleClick, styles }) => {
+const CustomButton = ({
+  btnType,
+  title,
+  handleClick,
+  styles,
+}: {
+  btnType: "button" | "submit" | "reset"
+  title: string
+  handleClick: () => void
+  styles: string
+}) => {
   return (
     <button
       type={btnType}
