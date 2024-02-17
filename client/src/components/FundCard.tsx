@@ -1,7 +1,9 @@
 import React from "react"
+import Image from "next/image"
+
 import { tagType, thirdweb } from "@/assets"
 import { daysLeft } from "@/utils"
-import Image from "next/image"
+
 import { Campaign } from "./DisplayCampaigns"
 
 const FundCard = ({ campaign, handleClick }: { campaign: Campaign; handleClick: () => void }) => {

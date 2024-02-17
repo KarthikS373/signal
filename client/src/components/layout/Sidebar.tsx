@@ -1,9 +1,10 @@
 import React, { useState } from "react"
+import Image, { StaticImageData } from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/router"
+
 import { logo, sun } from "@/assets"
 import { navlinks } from "@/data"
-import { useRouter } from "next/router"
-import Image, { StaticImageData } from "next/image"
 
 const Icon = ({
   styles,

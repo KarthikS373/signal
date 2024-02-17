@@ -1,4 +1,5 @@
 import React from "react"
+
 import DisplayCampaigns from "@/components/DisplayCampaigns"
 
 interface HomePageProps {

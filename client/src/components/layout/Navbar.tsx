@@ -1,10 +1,12 @@
 import React, { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
-import CustomButton from "@/components/CustomButton"
+import { useRouter } from "next/router"
+
 import { logo, menu, search, thirdweb } from "@/assets"
 import { navlinks } from "@/data"
-import { useRouter } from "next/router"
-import Image from "next/image"
+
+import CustomButton from "@/components/CustomButton"
 
 const Navbar = () => {
   const router = useRouter()

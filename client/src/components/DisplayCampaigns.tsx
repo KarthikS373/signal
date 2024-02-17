@@ -1,9 +1,11 @@
 import React from "react"
-import { v4 as uuidv4 } from "uuid"
-import FundCard from "@/components/FundCard"
-import { loader } from "@/assets"
-import { useRouter } from "next/router"
 import Image from "next/image"
+import { useRouter } from "next/router"
+import { v4 as uuidv4 } from "uuid"
+
+import { loader } from "@/assets"
+
+import FundCard from "@/components/FundCard"
 
 export interface Campaign {
   owner: string
