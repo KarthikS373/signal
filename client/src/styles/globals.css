@@ -1,60 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.linear-gradient {
+  background: linear-gradient(179.14deg, rgba(32, 18, 63, 0) -7.14%, #000000 87.01%);
 }
 
-html,
-body {
-  overflow-x: hidden;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 0;
-}
-
-::-webkit-scrollbar-track {
-  background-color: rgba(60, 60, 60, 0.6);
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: rgba(70, 70, 70, 0.7);
-  border-radius: 50px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: #fff;
-}
-
-@layer base {
-}
-
-@layer components {
-  .center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .no-scroll::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-  }
-
-  .line-clamp-3 {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-  }
-}
-
-@layer utilities {
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.8);
 }
