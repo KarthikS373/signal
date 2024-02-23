@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct InstantiateMsg {
+    pub entropy: String,
     pub creator_base_stake: Uint128,
     pub validator_base_stake: Uint128,
 }
@@ -70,18 +71,10 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    GetProfileWithViewingKey {
-        viewing_key: String,
-    },
-    GetNewsItem {
-        news_id: Uint64,
-    },
-    GetComments {
-        news_id: Uint64,
-    },
-    GetValidations {
-        news_id: Uint64,
-    },
+    GetProfileWithViewingKey { viewing_key: String },
+    GetNewsItem { news_id: Uint64 },
+    GetComments { news_id: Uint64 },
+    GetValidations { news_id: Uint64 },
     GetConfig {},
 }
 

@@ -1,19 +1,21 @@
 use schemars::JsonSchema;
+use secret_toolkit::storage::{Item, Keymap};
 use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::{Addr, Storage, Uint128};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
 
-pub static CONFIG_KEY: &[u8] = b"config";
-pub static CREATOR_KEY: &[u8] = b"creator";
-pub static VALIDATOR_KEY: &[u8] = b"validator";
-pub static NEWS_ITEM_KEY: &[u8] = b"news_item";
-pub static COMMENT_KEY: &[u8] = b"comment";
-pub static VALIDATION_KEY: &[u8] = b"validation";
+use crate::constants::{
+    COMMENT_KEY, CONFIG_KEY, CREATOR_KEY, CREATOR_PROFILES_KEY, NEWS_ITEMS_KEY, NEWS_ITEM_KEY,
+    VALIDATION_KEY, VALIDATOR_KEY, VALIDATOR_PROFILES_KEY,
+};
 
 // Config for the contract
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct Config {
+    // Randomness
+    pub entropy: String,
+
     // Staking parameters
     pub creator_base_stake: Uint128,
     pub validator_base_stake: Uint128,
@@ -26,6 +28,12 @@ pub fn config(storage: &mut dyn Storage) -> Singleton<Config> {
 pub fn config_read(storage: &dyn Storage) -> ReadonlySingleton<Config> {
     singleton_read(storage, CONFIG_KEY)
 }
+
+// Keymaps
+pub static CREATOR_PROFILES: Item<CreatorProfile> = Item::new(CREATOR_PROFILES_KEY);
+pub static VALIDATOR_PROFILES: Item<ValidatorProfile> = Item::new(VALIDATOR_PROFILES_KEY);
+
+pub static NEWS_ITEMS: Keymap<u32, NewsItem> = Keymap::new(NEWS_ITEMS_KEY);
 
 // Profile for content creators
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
@@ -55,8 +63,8 @@ pub struct ValidatorProfile {
     pub addr: Addr,
     pub stake: Uint128,
     pub reputation_score: Uint128,
-    pub validated_content_count: Uint128,
-    pub last_validation_timestamp: String,
+    pub validated_content_count: Option<Uint128>,
+    pub last_validation_timestamp: Option<String>,
 }
 
 pub fn validator_profiles(storage: &mut dyn Storage) -> Singleton<ValidatorProfile> {
@@ -82,22 +90,6 @@ pub fn news_items(storage: &mut dyn Storage) -> Singleton<NewsItem> {
 
 pub fn news_items_read(storage: &dyn Storage) -> ReadonlySingleton<NewsItem> {
     singleton_read(storage, NEWS_ITEM_KEY)
-}
-
-// Comments on a news item
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
-pub struct Comment {
-    pub news_id: String,
-    pub commenter: Addr,
-    pub content: String,
-}
-
-pub fn comments(storage: &mut dyn Storage) -> Singleton<Comment> {
-    singleton(storage, COMMENT_KEY)
-}
-
-pub fn comments_read(storage: &dyn Storage) -> ReadonlySingleton<Comment> {
-    singleton_read(storage, COMMENT_KEY)
 }
 
 // Record of a validation action by a reader
