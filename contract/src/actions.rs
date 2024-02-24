@@ -1,8 +1,9 @@
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
-    Uint128,
+    coin, coins, to_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError,
+    StdResult, Uint128,
 };
 
+use crate::constants::SCRT_DENOM;
 use crate::helpers::{generate_anonymous_id, generate_random_number};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{
@@ -198,43 +199,170 @@ pub fn validate_news_entry(
 /// GET QUERY
 
 /// Get a creator profile
-pub fn get_creator_profile(deps: Deps, anonymous_id: String) -> StdResult<CreatorProfile> {
-    // let profile = CREATOR_PROFILES.add_suffix()
-    // .load(deps.storage, anonymous_id.as_bytes())
-    // .unwrap();
+pub fn get_creator_profile(deps: DepsMut, _env: &Env, info: &MessageInfo) -> StdResult<Binary> {
+    let profile = CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .load(deps.storage)?;
 
-    // Ok(profile)
-    unimplemented!()
+    to_binary(&profile)
 }
 
 /// Get a validator profile
-pub fn get_validator_profile(deps: Deps, anonymous_id: String) -> StdResult<ValidatorProfile> {
-    // let profile = VALIDATOR_PROFILES
-    //     .add_suffix(anonymous_id.as_bytes())
-    //     .load(deps.storage)
-    //     .unwrap();
+pub fn get_validator_profile(deps: DepsMut, _env: &Env, info: &MessageInfo) -> StdResult<Binary> {
+    let profile = VALIDATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .load(deps.storage)?;
 
-    // Ok(profile)
-    unimplemented!()
+    to_binary(&profile)
 }
 
 /// Get a news item
-pub fn get_news_item(deps: Deps, news_id: u32) -> StdResult<NewsItem> {
+pub fn get_news_item(deps: Deps, news_id: u32) -> StdResult<Binary> {
     let news = NEWS_ITEMS.get(deps.storage, &news_id).unwrap();
 
-    Ok(news)
+    to_binary(&news)
 }
 
 /// Get all news items
-pub fn get_all_news_items(deps: Deps) -> StdResult<Vec<NewsItem>> {
-    // let news = NEWS_ITEMS.range(deps.storage, None, None, cosmwasm_std::Order::Ascending);
+pub fn get_all_news_items(deps: Deps) -> StdResult<Binary> {
+    let news_iter = NEWS_ITEMS.iter(deps.storage);
 
-    // let mut news_items: Vec<NewsItem> = vec![];
+    let iter = news_iter.unwrap();
 
-    // for item in news {
-    //     news_items.push(item.1);
-    // }
+    let mut news_items: Vec<NewsItem> = vec![];
 
-    // Ok(news_items)
-    unimplemented!()
+    for item in iter {
+        let item = item?;
+        news_items.push(item.1);
+    }
+
+    to_binary(&news_items)
+}
+
+/// Payment actions
+
+/// Update the stake of a creator
+pub fn update_creator_stake(
+    deps: DepsMut,
+    env: &Env,
+    info: &MessageInfo,
+    new_stake: Uint128,
+) -> StdResult<Response> {
+    let state = configure_read(deps.storage).load()?;
+    // Ensure sender has sent the required amount of SCRT
+    // let stake = must_pay(&info, &SCRT_DENOM);
+
+    let stake = 10u128; // TODO: Replace with actual stake
+    let base_stake = state.creator_base_stake.u128();
+
+    // Check if the stake is within the base stake
+    if stake > base_stake + 1 || stake < base_stake - 1 {
+        return Err(StdError::generic_err(
+            "Stake does not meet the base requirement",
+        ));
+    }
+
+    let mut profile = CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .load(deps.storage)?;
+
+    // If already staked before, reject the transaction as we don't support more than one stake
+    if profile.stake > Uint128::zero() {
+        return Err(StdError::generic_err("Stake already exists"));
+    }
+
+    let contract_address = env.contract.address.clone();
+    BankMsg::Send {
+        to_address: contract_address.to_string(),
+        amount: coins(32, "scrt"),
+    };
+
+    profile.stake += new_stake;
+
+    CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .save(deps.storage, &profile)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "update_creator_stake")
+        .add_attribute("creator", profile.anonymous_id))
+}
+
+/// Update the stake of a validator
+pub fn update_validator_stake(
+    deps: DepsMut,
+    env: &Env,
+    info: &MessageInfo,
+    new_stake: Uint128,
+) -> StdResult<Response> {
+    let state = configure_read(deps.storage).load()?;
+    // Ensure sender has sent the required amount of SCRT
+    // let stake = must_pay(&info, &SCRT_DENOM);
+
+    let stake = 10u128; // TODO: Replace with actual stake
+    let base_stake = state.validator_base_stake.u128();
+
+    // Check if the stake is within the base stake
+    if stake > base_stake + 1 || stake < base_stake - 1 {
+        return Err(StdError::generic_err(
+            "Stake does not meet the base requirement",
+        ));
+    }
+
+    let mut profile = VALIDATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .load(deps.storage)?;
+
+    // If already staked before, reject the transaction as we don't support more than one stake
+    if profile.stake > Uint128::zero() {
+        return Err(StdError::generic_err("Stake already exists"));
+    }
+
+    let contract_address = env.contract.address.clone();
+    BankMsg::Send {
+        to_address: contract_address.to_string(),
+        amount: coins(32, "scrt"),
+    };
+
+    profile.stake += new_stake;
+
+    VALIDATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .save(deps.storage, &profile)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "update_validator_stake")
+        .add_attribute("validator", profile.anonymous_id))
+}
+
+/// Withdraw the stake of a creator
+pub fn withdraw_creator_stake(
+    deps: DepsMut,
+    env: &Env,
+    info: &MessageInfo,
+    amount: Uint128,
+) -> StdResult<Response> {
+    let mut profile = CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .load(deps.storage)?;
+
+    if profile.stake < amount {
+        return Err(StdError::generic_err("Insufficient stake"));
+    }
+
+    let contract_address = env.contract.address.clone();
+    BankMsg::Send {
+        to_address: contract_address.to_string(),
+        amount: coins(32, "scrt"),
+    };
+
+    profile.stake -= amount;
+
+    CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .save(deps.storage, &profile)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "withdraw_creator_stake")
+        .add_attribute("creator", profile.anonymous_id))
 }

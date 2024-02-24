@@ -1,4 +1,5 @@
 pub static BLOCK_SIZE: usize = 256;
+pub static SCRT_DENOM: &str = "uscrt";
 
 // Storage keys
 pub static CONFIG_KEY: &[u8] = b"config";
