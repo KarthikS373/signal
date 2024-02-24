@@ -12,3 +12,7 @@ pub static VALIDATION_KEY: &[u8] = b"validation";
 pub static CREATOR_PROFILES_KEY: &[u8] = b"creator_profiles";
 pub static VALIDATOR_PROFILES_KEY: &[u8] = b"validator_profiles";
 pub static NEWS_ITEMS_KEY: &[u8] = b"news_items";
+
+// Address mappings
+pub static ANONID_CREATORADDRESS_KEY: &[u8] = b"anonid_to_creator_address";
+pub static ANONID_VALIDATORADDRESS_KEY: &[u8] = b"aonid_to_validator_address";
