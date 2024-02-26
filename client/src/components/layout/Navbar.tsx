@@ -2,13 +2,13 @@ import React, { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
+import { SecretNetworkClient } from "secretjs"
 
 import { logo, menu, search, thirdweb } from "@/assets"
 import { navlinks } from "@/data"
-import { SecretNetworkClient } from "secretjs"
+import { useAuth } from "@/providers/auth-context"
 
 import CustomButton from "@/components/CustomButton"
-import { useAuth } from "@/providers/auth-context"
 
 const Navbar = () => {
   const router = useRouter()

@@ -6,6 +6,5 @@ declare global {
     leap: Keplr
     getOfflineSignerOnlyAmino: (chainId: string) => OfflineAminoSigner
     getEnigmaUtils: (chainId: string) => SecretUtils
-    leap: any
   }
 }

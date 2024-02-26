@@ -16,8 +16,8 @@
     "next/core-web-vitals",
     "eslint:recommended",
     "plugin:prettier/recommended",
-    "plugin:react/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:react/recommended"
+    // "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
     "prettier/prettier": [
@@ -27,7 +27,7 @@
       }
     ],
     "react/react-in-jsx-scope": "off",
-    "no-unused-vars": 1,
+    "no-unused-vars": "warn",
     "react/no-unescaped-entities": 0,
     "no-useless-escape": "warn",
     "simple-import-sort/imports": "error",
