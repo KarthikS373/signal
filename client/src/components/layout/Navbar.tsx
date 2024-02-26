@@ -5,15 +5,110 @@ import { useRouter } from "next/router"
 
 import { logo, menu, search, thirdweb } from "@/assets"
 import { navlinks } from "@/data"
+import { SecretNetworkClient } from "secretjs"
 
 import CustomButton from "@/components/CustomButton"
+import { useAuth } from "@/providers/auth-context"
 
 const Navbar = () => {
   const router = useRouter()
   const [isActive, setIsActive] = useState("dashboard")
   const [toggleDrawer, setToggleDrawer] = useState(false)
-  const connect = () => {}
-  const address = ""
+
+  const { loading, setLoading, userData, setUserData } = useAuth()
+
+  const CHAIN_ID = {
+    leap: "juno-1",
+    keplr: "pulsar-3",
+  }
+  const LCD = {
+    keplr: "https://api.pulsar3.scrttestnet.com",
+  }
+
+  const conectLeap = async () => {
+    try {
+      setLoading(true)
+      if (typeof window !== "undefined") {
+        // leap
+        const leapProvider = (window as any).leap
+        if (!leapProvider) {
+          alert("Pls install Leap wallet. Thx!")
+        } else {
+          const key = await leapProvider.getKey(CHAIN_ID["leap"])
+          const { name, bech32Address } = key
+          setUserData((userData) => ({
+            ...userData,
+            leap: { walletName: name, walletAddress: bech32Address },
+          }))
+        }
+      }
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const connectKeplr = async () => {
+    try {
+      setLoading(true)
+      if (typeof window !== "undefined") {
+        // leap
+        const leapProvider = (window as any).leap
+        if (!leapProvider) {
+          alert("Pls install Leap wallet. Thx!")
+        } else {
+          const key = await leapProvider.getKey(CHAIN_ID["leap"])
+          const { name, bech32Address } = key
+          setUserData((userData) => ({
+            ...userData,
+            leap: { walletName: name, walletAddress: bech32Address },
+          }))
+        }
+
+        // keplr
+        const keplr = (window as any).keplr
+        if (!keplr) {
+          alert("Pls install Keplr wallet. Thx!")
+        } else {
+          // Enabling before using the Keplr is recommended.
+          // This method will ask the user whether or not to allow access if they haven't visited this website.
+          // Also, it will request user to unlock the wallet if the wallet is locked.
+          await keplr.enable(CHAIN_ID["keplr"])
+          const offlineSigner = (window as any).getOfflineSignerOnlyAmino(CHAIN_ID["keplr"])
+
+          // You can get the address/public keys by `getAccounts` method.
+          // It can return the array of address/public key.
+          // But, currently, Keplr extension manages only one address/public key pair.
+          // XXX: This line is needed to set the sender address for SigningCosmosClient.
+          const accounts = await offlineSigner.getAccounts()
+          const secretjs = new SecretNetworkClient({
+            url: LCD["keplr"],
+            chainId: CHAIN_ID["keplr"],
+            wallet: offlineSigner,
+            walletAddress: accounts[0].address,
+            encryptionUtils: (window as any).getEnigmaUtils(CHAIN_ID["keplr"]),
+          })
+          setUserData((userData) => ({
+            ...userData,
+            keplr: {
+              walletName: "SCRT",
+              walletAddress: accounts[0].address,
+              walletClient: secretjs,
+            },
+          }))
+        }
+      }
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  console.log({ loading, userData })
+
+  const address = userData.keplr?.walletAddress
 
   return (
     <div className="flex md:flex-row flex-col-reverse justify-between mb-[35px] gap-6">
@@ -36,7 +131,7 @@ const Navbar = () => {
           styles={address ? "bg-[#1dc071]" : "bg-[#8c6dfd]"}
           handleClick={() => {
             if (address) router.push("/create-campaign")
-            else connect()
+            else connectKeplr()
           }}
         />
 
@@ -101,7 +196,7 @@ const Navbar = () => {
               styles={address ? "bg-[#1dc071]" : "bg-[#8c6dfd]"}
               handleClick={() => {
                 if (address) router.push("create-campaign")
-                else connect()
+                else connectKeplr()
               }}
             />
           </div>
