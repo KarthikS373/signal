@@ -30,7 +30,7 @@ const Navbar = () => {
       setLoading(true)
       if (typeof window !== "undefined") {
         // leap
-        const leapProvider = (window as any).leap
+        const leapProvider = window.leap
         if (!leapProvider) {
           alert("Pls install Leap wallet. Thx!")
         } else {
@@ -53,21 +53,8 @@ const Navbar = () => {
     try {
       setLoading(true)
       if (typeof window !== "undefined") {
-        // leap
-        const leapProvider = (window as any).leap
-        if (!leapProvider) {
-          alert("Pls install Leap wallet. Thx!")
-        } else {
-          const key = await leapProvider.getKey(CHAIN_ID["leap"])
-          const { name, bech32Address } = key
-          setUserData((userData) => ({
-            ...userData,
-            leap: { walletName: name, walletAddress: bech32Address },
-          }))
-        }
-
         // keplr
-        const keplr = (window as any).keplr
+        const keplr = window.keplr
         if (!keplr) {
           alert("Pls install Keplr wallet. Thx!")
         } else {
@@ -75,7 +62,7 @@ const Navbar = () => {
           // This method will ask the user whether or not to allow access if they haven't visited this website.
           // Also, it will request user to unlock the wallet if the wallet is locked.
           await keplr.enable(CHAIN_ID["keplr"])
-          const offlineSigner = (window as any).getOfflineSignerOnlyAmino(CHAIN_ID["keplr"])
+          const offlineSigner = window.getOfflineSignerOnlyAmino(CHAIN_ID["keplr"])
 
           // You can get the address/public keys by `getAccounts` method.
           // It can return the array of address/public key.
@@ -87,7 +74,7 @@ const Navbar = () => {
             chainId: CHAIN_ID["keplr"],
             wallet: offlineSigner,
             walletAddress: accounts[0].address,
-            encryptionUtils: (window as any).getEnigmaUtils(CHAIN_ID["keplr"]),
+            encryptionUtils: window.getEnigmaUtils(CHAIN_ID["keplr"]),
           })
           setUserData((userData) => ({
             ...userData,
