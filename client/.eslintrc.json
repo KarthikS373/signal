@@ -27,7 +27,7 @@
       }
     ],
     "react/react-in-jsx-scope": "off",
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
     "react/no-unescaped-entities": 0,
     "no-useless-escape": "warn",
     "simple-import-sort/imports": "error",
