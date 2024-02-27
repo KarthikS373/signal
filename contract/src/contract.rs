@@ -1,9 +1,12 @@
-use cosmwasm_std::{
-    entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
-};
+use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
-use crate::actions::{create_creator_profile, create_news_entry, create_validator_profile};
-use crate::msg::{self, ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::actions::{
+    create_creator_profile, create_news_entry, create_validator_profile, get_all_news_items,
+    get_config, get_news_item, get_news_of_creator, validate_news_entry, CreateCreatorProfileArgs,
+    CreateNewsArgs, CreateValidatorProfileArgs, GetNewsItemArgs, GetNewsOfCreatorArgs,
+    ValidateNewsArgs,
+};
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{config as configure, Config};
 
 // Excecutables
@@ -35,57 +38,110 @@ pub fn instantiate(
 #[entry_point]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::CreateCreatorProfile {
-            stake: _,
-            viewing_key,
-        } => {
+        /*
+         * route: create_creator_profile
+         * args: {}
+         */
+        ExecuteMsg::CreateCreatorProfile {} => {
             deps.api.debug("create_creator_profile");
-            create_creator_profile(deps, &env, &info)
+            create_creator_profile(deps, &env, &info, CreateCreatorProfileArgs {})
         }
-        ExecuteMsg::CreateValidatorProfile {
-            stake: _,
-            viewing_key,
-        } => {
+        /*
+         * route: create_validator_profile
+         * args: {}
+         */
+        ExecuteMsg::CreateValidatorProfile {} => {
             deps.api.debug("create_validator_profile");
-            create_validator_profile(deps, &env, &info)
+            create_validator_profile(deps, &env, &info, CreateValidatorProfileArgs {})
         }
-        ExecuteMsg::PostNews {
-            content,
-            anonymous_id,
-        } => {
+        /*
+         * route: create_news_entry
+         * args: {
+         *   content: String --> IPFS hash with the news content
+         * }
+         */
+        ExecuteMsg::PostNews { content } => {
             deps.api.debug("create_news_entry");
-            create_news_entry(deps, &env, &info)
+            create_news_entry(deps, &env, &info, CreateNewsArgs { content })
         }
+        /*
+         * route: validate_news_entry
+         * args: {
+         *   news_id: Uint64 --> ID of the news to validate
+         *   vote: bool --> Vote for the news (true = approve, false = reject)
+         *   comment: String --> Comment for the news (min 300 characters, max 1000 characters)
+         * }
+         */
         ExecuteMsg::ValidateNews {
             news_id,
-            approved,
-            anonymous_id,
+            comment,
+            vote,
         } => {
             deps.api.debug("validate_news");
-            create_news_entry(deps, &env, &info)
+            validate_news_entry(
+                deps,
+                &env,
+                &info,
+                ValidateNewsArgs {
+                    news_id: news_id.u64(),
+                    vote,
+                    comment,
+                },
+            )
         }
-        _ => unimplemented!(),
     }
 }
 
 #[entry_point]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        // QueryMsg::GetProfileWithViewingKey { viewing_key } => {}
-        // QueryMsg::GetNewsItem { news_id } => {}
-        _ => unimplemented!(),
+        /*
+         * route: get_config
+         * args: {}
+         */
+        QueryMsg::GetConfig {} => {
+            deps.api.debug("get_config");
+            get_config(deps, &env)
+        }
+        /*
+         * route: get_news_item
+         * args: {
+         *   news_id: Uint64 --> ID of the news to retrieve
+         * }
+         */
+        QueryMsg::GetNewsItem { news_id } => {
+            deps.api.debug("get_news_item");
+            get_news_item(
+                deps,
+                &env,
+                GetNewsItemArgs {
+                    news_id: news_id.u64() as u32,
+                },
+            )
+        }
+        /*
+         * route: get_all_news_items
+         * args: {}
+         */
+        QueryMsg::GetAllNewsItems {} => {
+            deps.api.debug("get_all_news_items");
+            get_all_news_items(deps, &env)
+        }
+        /*
+         * route: get_all_news_items_by_creator
+         */
+        QueryMsg::GetAllNewsItemsByCreator { creator } => {
+            deps.api.debug("get_all_news_items_by_creator");
+            get_news_of_creator(
+                deps,
+                &env,
+                GetNewsOfCreatorArgs {
+                    creator_anonymous_id: creator,
+                },
+            )
+        }
     }
 }
-
-// Actions
-pub fn sample_fn(deps: DepsMut, _env: Env) -> StdResult<Response> {
-    deps.api.debug("executed successfully");
-    // Err(StdError::generic_err("Only the owner can reset count"))
-    // let state = config_read(deps.storage).load()?;
-    // Ok(CountResponse { count: state.count })
-    Ok(Response::default())
-}
-
 // Unit tests
 #[cfg(test)]
 mod tests {
@@ -153,13 +209,12 @@ mod tests {
         let mut deps = mock_dependencies();
         let info = mock_info("creator", &[]);
         let stake = Uint128::one();
-        let viewing_key = "viewing_key".to_owned();
 
         let res = execute(
             deps.as_mut(),
             mock_env(),
             info.to_owned(),
-            ExecuteMsg::CreateCreatorProfile { stake, viewing_key },
+            ExecuteMsg::CreateCreatorProfile {},
         );
 
         if res.is_err() {
@@ -200,10 +255,7 @@ mod tests {
             deps.as_mut(),
             mock_env(),
             info.to_owned(),
-            ExecuteMsg::CreateCreatorProfile {
-                stake,
-                viewing_key: viewing_key.to_string(),
-            },
+            ExecuteMsg::CreateCreatorProfile {},
         );
 
         if res1.is_err() {
@@ -224,10 +276,7 @@ mod tests {
             deps.as_mut(),
             mock_env(),
             info.to_owned(),
-            ExecuteMsg::CreateCreatorProfile {
-                stake,
-                viewing_key: viewing_key.to_string(),
-            },
+            ExecuteMsg::CreateCreatorProfile {},
         );
 
         if res2.is_err() {

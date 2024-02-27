@@ -13,22 +13,15 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    CreateCreatorProfile {
-        stake: Uint128,
-        viewing_key: String,
-    },
-    CreateValidatorProfile {
-        stake: Uint128,
-        viewing_key: String,
-    },
+    CreateCreatorProfile {},
+    CreateValidatorProfile {},
     PostNews {
         content: String,
-        anonymous_id: String,
     },
     ValidateNews {
-        news_id: u64,
-        approved: bool,
-        anonymous_id: String,
+        news_id: Uint64,
+        vote: bool,
+        comment: String,
     },
     // UpdateStake {
     //     new_stake: Uint128,
@@ -62,12 +55,10 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    GetProfileWithViewingKey { viewing_key: String },
-    GetNewsItem { news_id: Uint64 },
-    GetValidations { news_id: Uint64 },
     GetConfig {},
+    // GetCreatorProfile {},   // Only the creator can view their profile
+    // GetValidatorProfile {}, // Only the validator can view their profile
+    GetNewsItem { news_id: Uint64 },
+    GetAllNewsItems {},
+    GetAllNewsItemsByCreator { creator: String },
 }
-
-// We define a custom struct for each query response
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
-pub struct Custom {}

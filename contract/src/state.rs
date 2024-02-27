@@ -39,6 +39,8 @@ pub static NEWS_ITEMS: Keymap<u32, NewsItem> = Keymap::new(NEWS_ITEMS_KEY);
 pub static ANONID_CREATORADDRESS: Keymap<String, Addr> = Keymap::new(ANONID_CREATORADDRESS_KEY);
 pub static ANONID_VALIDATORADDRESS: Keymap<String, Addr> = Keymap::new(ANONID_VALIDATORADDRESS_KEY);
 
+pub static NEWS_VALIDATIONS: Keymap<String, Validation> = Keymap::new(VALIDATION_KEY);
+
 // Profile for content creators
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct CreatorProfile {
@@ -63,7 +65,6 @@ pub fn creator_profiles_read(storage: &dyn Storage) -> ReadonlySingleton<Creator
 pub struct ValidatorProfile {
     pub anonymous_id: String,
 
-    pub stake: Uint128,
     pub reputation_score: Uint128,
     pub validated_content_count: Option<Uint128>,
     pub last_validation_timestamp: Option<String>,
@@ -83,11 +84,6 @@ pub struct NewsItem {
     pub id: String,
     pub creator: String,
     pub content: String,
-
-    pub validated: bool,
-    pub approved: bool,
-
-    pub validator: Option<String>,
 }
 
 pub fn news_items(storage: &mut dyn Storage) -> Singleton<NewsItem> {
@@ -101,14 +97,16 @@ pub fn news_items_read(storage: &dyn Storage) -> ReadonlySingleton<NewsItem> {
 // Record of a validation action by a reader
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct Validation {
+    pub validator: String,
+
     pub news_id: String,
-    pub validator: Addr,
+    pub vote: bool,
+    pub comment: String,
 }
 
-pub fn validations(storage: &mut dyn Storage) -> Singleton<Validation> {
-    singleton(storage, VALIDATION_KEY)
-}
-
-pub fn validations_read(storage: &dyn Storage) -> ReadonlySingleton<Validation> {
-    singleton_read(storage, VALIDATION_KEY)
+// Custom states for queries
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct NewsItemWithValidations {
+    pub news: NewsItem,
+    pub validations: Vec<Validation>,
 }
