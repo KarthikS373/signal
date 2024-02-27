@@ -1,12 +1,23 @@
-import { SecretNetworkClient, Wallet } from "secretjs";
 import * as fs from "fs";
+
 import dotenv from "dotenv";
+import { Coin, SecretNetworkClient, Wallet } from "secretjs";
+
 import { generateRandomString } from "../utils";
+
 dotenv.config();
 
 const wallet = new Wallet(process.env.MNEMONIC);
 
-const contract_wasm = fs.readFileSync("../contract.wasm.gz");
+// Load contract wasm
+let contract_wasm: Buffer;
+try {
+  contract_wasm = fs.readFileSync("../contract.wasm.gz");
+} catch (err) {
+  console.log("Error loading contract wasm");
+  console.log(err);
+  process.exit(1);
+}
 
 const secretjs = new SecretNetworkClient({
   chainId: "pulsar-3",
@@ -15,7 +26,7 @@ const secretjs = new SecretNetworkClient({
   walletAddress: wallet.address,
 });
 
-let upload_contract = async () => {
+const deployContract = async () => {
   try {
     let tx = await secretjs.tx.compute.storeCode(
       {
@@ -46,17 +57,10 @@ let upload_contract = async () => {
   }
 };
 
-// upload_contract();
-// // {
-// //   codeId: 5117,
-// //   contractCodeHash: '33b31cc5ea704fdc04825c6c32e7bbe72292fa0756cf8d4ef5e35ef0a874d66c'
-// // }
-
-let instantiate_contract = async (
+const instantiateContract = async (
   codeId: string | number,
   contractCodeHash: string
 ) => {
-  // Create an instance of the Counter contract, providing a starting count
   const initMsg = {
     entropy: generateRandomString(20),
     creator_base_stake: String(15_000_000_000_000_000_000),
@@ -69,14 +73,13 @@ let instantiate_contract = async (
       sender: wallet.address,
       code_hash: contractCodeHash,
       init_msg: initMsg,
-      label: "My NewsBobchain" + Math.ceil(Math.random() * 10000),
+      label: "test__signal-" + Math.ceil(Math.random() * 10000),
     },
     {
       gasLimit: 400_000,
     }
   );
 
-  //Find the contract_address in the logs
   const contractAddress = tx.arrayLog?.find(
     (log) => log.type === "message" && log.key === "contract_address"
   )?.value;
@@ -84,54 +87,145 @@ let instantiate_contract = async (
   console.log({ contractAddress });
 };
 
-// instantiate_contract(
-//   5117,
-//   "33b31cc5ea704fdc04825c6c32e7bbe72292fa0756cf8d4ef5e35ef0a874d66c"
-// );
-// // { contractAddress: 'secret1y08gl9u34h9g5vj72qhljxc9j95avg878q5sz2' }
-
-let try_query_count = async (
+const queryContract = async (
   contract_address: string,
-  contractCodeHash: string
+  contractCodeHash: string,
+  method: string
 ) => {
-  const my_query = await secretjs.query.compute.queryContract({
-    contract_address: contract_address,
-    code_hash: contractCodeHash,
-    query: { get_count: {} },
-  });
+  let query_method = null;
+  switch (method) {
+    case "config":
+      query_method = { get_config: {} };
+      break;
+    case "profile":
+      query_method = { get_profile_with_viewing_key: {} };
+      break;
+    case "news":
+      query_method = { get_news_item: {} };
+      break;
+    case "validations":
+      query_method = { get_validations: {} };
+      break;
+    default:
+      query_method = null;
+  }
 
-  console.log(my_query);
-};
+  if (query_method === null) {
+    console.log("Invalid method");
+    return;
+  }
 
-try_query_count(
-  "secret1y08gl9u34h9g5vj72qhljxc9j95avg878q5sz2",
-  "33b31cc5ea704fdc04825c6c32e7bbe72292fa0756cf8d4ef5e35ef0a874d66c"
-);
-// > { count: 0 }
+  try {
+    console.log("Querying contract");
 
-let try_increment_count = async (
-  contract_address: string,
-  contractCodeHash: string
-) => {
-  console.log("incrementing...");
-  let tx = await secretjs.tx.compute.executeContract(
-    {
-      sender: wallet.address,
+    const query = await secretjs.query.compute.queryContract({
       contract_address: contract_address,
-      code_hash: contractCodeHash, // optional but way faster
-      msg: {
-        increment: {},
-      },
-      sent_funds: [], // optional
-    },
-    {
-      gasLimit: 100_000,
-    }
-  );
-  console.log("Done");
+      code_hash: contractCodeHash,
+      query: query_method,
+    });
+    console.log("Query result:");
+    console.log(query);
+  } catch (err) {
+    console.log("Error querying contract");
+    console.log(err);
+  }
 };
 
-// try_increment_count(
-//   "secret19mjewp9932vwrsj7lpnjlad5n4ua5nzhvty4yp",
-//   "922efd1650f7d992ee16426b38e3cebb55c53a9812ecdbfa106ee36948c3d05c"
-// );
+const executeContract = async (
+  contract_address: string,
+  contractCodeHash: string,
+  method: string
+) => {
+  let query_method = null,
+    funds: Coin[] = [];
+
+  switch (method) {
+    case "create_creator":
+      const viewing_key = generateRandomString(20);
+      console.log("Viewing key: " + viewing_key);
+      query_method = {
+        create_creator_profile: {
+          stake: "0", // Initial stake would be 0
+          viewing_key: viewing_key, // Random viewing key
+        },
+      };
+      break;
+    case "create_validator":
+      query_method = { create_validator_profile: {} };
+      break;
+    case "post_news":
+      query_method = { post_news: {} };
+      break;
+    case "validate_news":
+      query_method = { validate_news: {} };
+      break;
+    default:
+      query_method = null;
+  }
+
+  if (query_method === null) {
+    console.log("Invalid method");
+    return;
+  }
+
+  try {
+    console.log("Executing contract");
+
+    let tx = await secretjs.tx.compute.executeContract(
+      {
+        sender: wallet.address,
+        contract_address: contract_address,
+        code_hash: contractCodeHash,
+        msg: query_method,
+        sent_funds: funds,
+      },
+      {
+        gasLimit: 100_000,
+      }
+    );
+    console.log("Tx result:");
+    console.log(tx);
+  } catch (err) {
+    console.log("Error executing contract");
+    console.log(err);
+  }
+};
+
+// Command-line interface
+const command = process.argv[2];
+console.log(`
+Command: ${command}
+Args: 
+ - ${process.argv[3]} 
+ - ${process.argv[4]}
+ - ${process.argv[5]}
+`);
+switch (command) {
+  case "deploy":
+    deployContract();
+    break;
+  case "init":
+    instantiateContract(
+      process.argv[3], // codeId
+      process.argv[4] // contractCodeHash
+    );
+    break;
+  case "query":
+    queryContract(
+      process.argv[3], // contract_address
+      process.argv[4], // contractCodeHash
+      process.argv[5] // method
+    );
+    break;
+  case "execute":
+    executeContract(
+      process.argv[3], // contract_address
+      process.argv[4], // contractCodeHash
+      process.argv[5] // method
+    );
+    break;
+  default:
+    console.log(
+      "Invalid command. Usage: node index.js [deploy | init | query | execute]"
+    );
+}

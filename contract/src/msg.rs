@@ -30,42 +30,33 @@ pub enum ExecuteMsg {
         approved: bool,
         anonymous_id: String,
     },
-    CommentOnNews {
-        news_id: u64,
-        content: String,
-        anonymous_id: String,
-    },
-    UpdateStake {
-        new_stake: Uint128,
-        anonymous_id: String,
-    },
-    UpdateReputation {
-        new_reputation: u64,
-    },
-    WarnCreator {
-        anonymous_id: String,
-    },
-    RemoveWarning {
-        anonymous_id: String,
-    },
-    RemoveValidator {
-        anonymous_id: String,
-    },
-    RemoveCreator {
-        anonymous_id: String,
-    },
-    RemoveNews {
-        news_id: u64,
-    },
-    RemoveComment {
-        news_id: u64,
-        comment_id: u64,
-    },
-    TransferStake {
-        recipient_anonymous_id: String,
-        amount: Uint128,
-        viewing_key: String,
-    },
+    // UpdateStake {
+    //     new_stake: Uint128,
+    //     anonymous_id: String,
+    // },
+    // UpdateReputation {
+    //     new_reputation: u64,
+    // },
+    // WarnCreator {
+    //     anonymous_id: String,
+    // },
+    // RemoveWarning {
+    //     anonymous_id: String,
+    // },
+    // RemoveValidator {
+    //     anonymous_id: String,
+    // },
+    // RemoveCreator {
+    //     anonymous_id: String,
+    // },
+    // RemoveNews {
+    //     news_id: u64,
+    // },
+    // TransferStake {
+    //     recipient_anonymous_id: String,
+    //     amount: Uint128,
+    //     viewing_key: String,
+    // },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
@@ -73,7 +64,6 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     GetProfileWithViewingKey { viewing_key: String },
     GetNewsItem { news_id: Uint64 },
-    GetComments { news_id: Uint64 },
     GetValidations { news_id: Uint64 },
     GetConfig {},
 }

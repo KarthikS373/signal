@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    coin, coins, to_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError,
-    StdResult, Uint128,
+    coin, coins, to_binary, BankMsg, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Response,
+    StdError, StdResult, Uint128,
 };
 
 use crate::constants::SCRT_DENOM;
@@ -298,15 +298,27 @@ pub fn update_validator_stake(
     let state = configure_read(deps.storage).load()?;
     // Ensure sender has sent the required amount of SCRT
     // let stake = must_pay(&info, &SCRT_DENOM);
+    let sent_amount = info
+        .funds
+        .iter()
+        .find(|f| f.denom == "uscrt")
+        .map(|f| f.amount);
 
-    let stake = 10u128; // TODO: Replace with actual stake
+    let amount = sent_amount.ok_or_else(|| "No SCRT sent");
+
     let base_stake = state.validator_base_stake.u128();
-
-    // Check if the stake is within the base stake
-    if stake > base_stake + 1 || stake < base_stake - 1 {
-        return Err(StdError::generic_err(
-            "Stake does not meet the base requirement",
-        ));
+    match amount {
+        Ok(amount) => {
+            let stake = amount.u128();
+            if stake > base_stake + 1 || stake < base_stake - 1 {
+                return Err(StdError::generic_err(
+                    "Stake does not meet the base requirement",
+                ));
+            }
+        }
+        Err(_) => {
+            return Err(StdError::generic_err("No SCRT sent"));
+        }
     }
 
     let mut profile = VALIDATOR_PROFILES
@@ -350,9 +362,9 @@ pub fn withdraw_creator_stake(
         return Err(StdError::generic_err("Insufficient stake"));
     }
 
-    let contract_address = env.contract.address.clone();
+    // let contract_address = env.contract.address.clone();
     BankMsg::Send {
-        to_address: contract_address.to_string(),
+        to_address: info.sender.to_string(),
         amount: coins(32, "scrt"),
     };
 

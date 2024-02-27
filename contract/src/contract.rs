@@ -2,7 +2,7 @@ use cosmwasm_std::{
     entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
 
-use crate::actions::create_creator_profile;
+use crate::actions::{create_creator_profile, create_news_entry, create_validator_profile};
 use crate::msg::{self, ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{config as configure, Config};
 
@@ -35,10 +35,35 @@ pub fn instantiate(
 #[entry_point]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::CreateCreatorProfile { stake, viewing_key } => {
+        ExecuteMsg::CreateCreatorProfile {
+            stake: _,
+            viewing_key,
+        } => {
+            deps.api.debug("create_creator_profile");
             create_creator_profile(deps, &env, &info)
         }
-        // ExecuteMsg::CreateValidatorProfile { stake, viewing_key } => {}
+        ExecuteMsg::CreateValidatorProfile {
+            stake: _,
+            viewing_key,
+        } => {
+            deps.api.debug("create_validator_profile");
+            create_validator_profile(deps, &env, &info)
+        }
+        ExecuteMsg::PostNews {
+            content,
+            anonymous_id,
+        } => {
+            deps.api.debug("create_news_entry");
+            create_news_entry(deps, &env, &info)
+        }
+        ExecuteMsg::ValidateNews {
+            news_id,
+            approved,
+            anonymous_id,
+        } => {
+            deps.api.debug("validate_news");
+            create_news_entry(deps, &env, &info)
+        }
         _ => unimplemented!(),
     }
 }
