@@ -6,7 +6,7 @@ use cosmwasm_std::{Addr, Storage, Uint128};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
 
 use crate::constants::{
-    ANONID_CREATORADDRESS_KEY, ANONID_VALIDATORADDRESS_KEY, COMMENT_KEY, CONFIG_KEY, CREATOR_KEY,
+    ANONID_CREATORADDRESS_KEY, ANONID_VALIDATORADDRESS_KEY, CONFIG_KEY, CREATOR_KEY,
     CREATOR_PROFILES_KEY, NEWS_ITEMS_KEY, NEWS_ITEM_KEY, VALIDATION_KEY, VALIDATOR_KEY,
     VALIDATOR_PROFILES_KEY,
 };
@@ -19,7 +19,6 @@ pub struct Config {
 
     // Staking parameters
     pub creator_base_stake: Uint128,
-    pub validator_base_stake: Uint128,
 }
 
 pub fn config(storage: &mut dyn Storage) -> Singleton<Config> {
@@ -47,7 +46,7 @@ pub struct CreatorProfile {
     pub anonymous_id: String,
 
     pub stake: Uint128,
-    pub reputation: Option<u64>,
+    pub reputation: u64,
 
     pub warnings_received: u32,
 }

@@ -23,18 +23,24 @@ pub fn create_creator_profile(
     let state = configure_read(deps.storage).load()?;
     let anonymous_id = generate_anonymous_id(env, info, state.entropy.as_bytes());
 
+    deps.api.debug(&format!("Anonymous ID: {}", anonymous_id));
+
     let profile = CreatorProfile {
         anonymous_id: anonymous_id.clone(),
         stake: Uint128::zero(), // Initial stake is zero
-        reputation: Some(0),    // Initial reputation is zero
+        reputation: 0,          // Initial reputation is zero
         warnings_received: 0,   // Initial warnings received is zero
     };
+
+    deps.api.debug(&format!("Profile: {:?}", profile));
 
     ANONID_CREATORADDRESS.insert(deps.storage, &anonymous_id, &info.sender)?;
 
     CREATOR_PROFILES
         .add_suffix(info.sender.as_bytes())
         .save(deps.storage, &profile)?;
+
+    deps.api.debug("Creator profile created successfully");
 
     Ok(Response::new()
         .add_attribute("method", "create_creator_profile")
@@ -98,7 +104,7 @@ pub fn create_news_entry(
 
     let state: Config = configure_read(deps.storage).load()?;
 
-    let user_exists = user_exists.unwrap();
+    let mut user_exists = user_exists.unwrap();
 
     // Check if user has staked the required amount of SCRT
     let stake = user_exists.stake.u128();
@@ -120,6 +126,13 @@ pub fn create_news_entry(
     };
 
     NEWS_ITEMS.insert(deps.storage, &index, &news)?;
+
+    // Update the reputation of the creator
+    user_exists.reputation += 1;
+
+    CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .save(deps.storage, &user_exists)?;
 
     Ok(Response::new()
         .add_attribute("method", "create_news_entry")
@@ -346,7 +359,7 @@ pub fn update_creator_stake(
         .map(|f| f.amount);
 
     let amount = sent_amount.ok_or_else(|| "No SCRT sent");
-    let base_stake = state.validator_base_stake.u128();
+    let base_stake = state.creator_base_stake.u128();
 
     match amount {
         Ok(amount) => {
