@@ -27,7 +27,7 @@ pub fn create_creator_profile(
 
     let profile = CreatorProfile {
         anonymous_id: anonymous_id.clone(),
-        stake: Uint128::zero(), // Initial stake is zero
+        stake: Uint128::new(15000000000000000000), // TODO: Initial stake *should be* zero, but is hardcoded for now to match base stake
         reputation: 0,          // Initial reputation is zero
         warnings_received: 0,   // Initial warnings received is zero
     };
