@@ -114,10 +114,10 @@ const Navbar = () => {
       <div className="sm:flex hidden flex-row justify-end gap-4">
         <CustomButton
           btnType="button"
-          title={address ? "Create a campaign" : "Connect"}
+          title={address ? "Post News" : "Connect"}
           styles={address ? "bg-[#1dc071]" : "bg-[#8c6dfd]"}
           handleClick={() => {
-            if (address) router.push("/create-campaign")
+            if (address) router.push("/post-news")
             else connectKeplr()
           }}
         />
