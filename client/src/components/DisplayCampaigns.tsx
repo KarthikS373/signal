@@ -22,7 +22,7 @@ const DisplayCampaigns = ({ title, isLoading }: { title: string; isLoading: bool
   const router = useRouter()
 
   const handleNavigate = (campaign: Campaign) => {
-    router.push(`/campaign-details/${campaign.title}`)
+    router.push(`/news/${campaign.title}`)
   }
 
   const campaigns = [
