@@ -7,6 +7,7 @@ import ErrorBoundary from "@/components/error-boundary"
 import Layout from "@/components/layout"
 
 import "@/styles/globals.css"
+import "@/styles/ckeditor.css"
 
 const App: NextPage<AppProps> = ({ Component, pageProps }) => {
   return (

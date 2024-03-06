@@ -14,9 +14,16 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^41.2.0",
+    "@ckeditor/ckeditor5-react": "^6.2.0",
+    "@shadeprotocol/shadejs": "^1.1.0",
+    "@tailwindcss/typography": "^0.5.10",
+    "@thirdweb-dev/storage": "^2.0.10",
     "autoprefixer": "10.4.14",
     "axios": "^1.4.0",
+    "ckeditor5-custom-build": "^0.0.6",
     "clsx": "^2.0.0",
+    "ethers": "^6.11.1",
     "husky": "^8.0.3",
     "jotai": "^2.3.1",
     "next": "13.4.13",
@@ -31,6 +38,7 @@
   },
   "devDependencies": {
     "@keplr-wallet/types": "^0.12.70",
+    "@types/ckeditor__ckeditor5-build-classic": "^37.0.0",
     "@types/node": "^20.11.7",
     "@types/react": "18.2.19",
     "@types/react-dom": "18.2.7",
