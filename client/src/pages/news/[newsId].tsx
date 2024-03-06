@@ -1,43 +1,21 @@
 import React, { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 
 import { scrt } from "@/assets"
-import { calculateBarPercentage, daysLeft } from "@/utils"
+import { useStateContext } from "@/providers/state-context"
+import { calculateBarPercentage, daysLeft, slug } from "@/utils"
 
 import CountBox from "@/components/CountBox"
 import CustomButton from "@/components/CustomButton"
 import Loader from "@/components/Loader"
-// import { useStateContext } from "../context"
 
 const CampaignDetails = () => {
-  const state = {
-    deadline: 1707775714036,
-    pId: 0,
-    target: 100,
-    amountCollected: 50,
-    owner: "0x25FCbC1e39Ca9b351FE907fC6F0E1788517E5890",
-    title: "scem ho gya",
-    description: "posa gya",
-    image: "https://images.unsplash.com/photo-1706554596177-35b0a05a082e",
-  }
-  const donators = [
-    {
-      donator: "0x25FCbC1e39Ca9b351FE907fC6F0E1788517E5890",
-      donation: 50,
-    },
-    {
-      donator: "0x25FCbC1e39Ca9b351FE907fC6F0E1788517E5890",
-      donation: 50,
-    },
-    {
-      donator: "0x25FCbC1e39Ca9b351FE907fC6F0E1788517E5890",
-      donation: 50,
-    },
-  ]
+  const { news } = useStateContext()
+  const router = useRouter()
+  const { newsId } = router.query
 
   const [isLoading, setIsLoading] = useState(false)
   const [amount, setAmount] = useState("")
-
-  const remainingDays = daysLeft(state.deadline)
 
   // const [donators, setDonators] = useState([])
   // const { donate, getDonations, contract, address } = useStateContext()
@@ -60,6 +38,12 @@ const CampaignDetails = () => {
     setIsLoading(false)
   }
 
+  const upvotes = 53
+  const downvotes = 11
+
+  const state = news?.find((item) => slug(item.title) === newsId)
+  if (!state) return null
+
   return (
     <div>
       {isLoading && <Loader />}
@@ -71,11 +55,11 @@ const CampaignDetails = () => {
             alt="campaign"
             className="w-full h-[410px] object-cover rounded-xl"
           />
-          <div className="relative w-full h-[5px] bg-[#3a3a43] mt-2">
+          <div className="relative w-full h-[5px] bg-[#3a3a43] mt-2 rounded-full">
             <div
-              className="absolute h-full bg-[#4acd8d]"
+              className="absolute h-full bg-[#4acd8d] rounded-full"
               style={{
-                width: `${calculateBarPercentage(state.target, state.amountCollected)}%`,
+                width: `${calculateBarPercentage(upvotes + downvotes, upvotes)}%`,
                 maxWidth: "100%",
               }}
             ></div>
@@ -83,9 +67,9 @@ const CampaignDetails = () => {
         </div>
 
         <div className="flex md:w-[150px] w-full flex-wrap justify-between gap-[30px]">
-          <CountBox title="Days Left" value={remainingDays} />
-          <CountBox title={`Raised of ${state.target}`} value={state.amountCollected} />
-          <CountBox title="Total Backers" value={donators.length} />
+          <CountBox title="Total ativity" value={"12.5k"} />
+          <CountBox title="Upvotes" value={upvotes} />
+          <CountBox title="Downvotes" value={downvotes} />
         </div>
       </div>
 
@@ -102,17 +86,19 @@ const CampaignDetails = () => {
               </div>
               <div>
                 <h4 className="font-epilogue font-semibold text-[14px] text-white break-all">
-                  {state.owner}
+                  ffa209342abfc
                 </h4>
                 <p className="mt-[4px] font-epilogue font-normal text-[12px] text-[#808191]">
-                  10 Campaigns
+                  {news?.length || 0} Campaigns
                 </p>
               </div>
             </div>
           </div>
 
           <div>
-            <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">Story</h4>
+            <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">
+              Description
+            </h4>
 
             <div className="mt-[20px]">
               <p className="font-epilogue font-normal text-[16px] text-[#808191] leading-[26px] text-justify">
@@ -122,40 +108,20 @@ const CampaignDetails = () => {
           </div>
 
           <div>
-            <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">
-              Donators
-            </h4>
-
-            <div className="mt-[20px] flex flex-col gap-4">
-              {donators.length > 0 ? (
-                donators.map((item, index) => (
-                  <div
-                    key={`${item.donator}-${index}`}
-                    className="flex justify-between items-center gap-4"
-                  >
-                    <p className="font-epilogue font-normal text-[16px] text-[#b2b3bd] leading-[26px] break-ll">
-                      {index + 1}. {item.donator}
-                    </p>
-                    <p className="font-epilogue font-normal text-[16px] text-[#808191] leading-[26px] break-ll">
-                      {item.donation}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="font-epilogue font-normal text-[16px] text-[#808191] leading-[26px] text-justify">
-                  No donators yet. Be the first one!
-                </p>
-              )}
-            </div>
+            <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">Story</h4>
+            <div
+              className="prose max-w-none mt-[20px]"
+              dangerouslySetInnerHTML={{ __html: state.story }}
+            ></div>
           </div>
         </div>
 
         <div className="flex-1">
-          <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">Fund</h4>
+          <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">Rate it!</h4>
 
           <div className="mt-[20px] flex flex-col p-4 bg-[#1c1c24] rounded-[10px]">
             <p className="font-epilogue fount-medium text-[20px] leading-[30px] text-center text-[#808191]">
-              Fund the campaign
+              Found the article legit?
             </p>
             <div className="mt-[30px]">
               <input
@@ -172,14 +138,20 @@ const CampaignDetails = () => {
                   Back it because you believe in it.
                 </h4>
                 <p className="mt-[20px] font-epilogue font-normal leading-[22px] text-[#808191]">
-                  Support the project for no reward, just because it speaks to you.
+                  Support the news for no reward, just because it speaks to you.
                 </p>
               </div>
 
               <CustomButton
                 btnType="button"
-                title="Fund Campaign"
+                title="Upvote 👍"
                 styles="w-full bg-[#8c6dfd]"
+                handleClick={handleDonate}
+              />
+              <CustomButton
+                btnType="button"
+                title="Downvote 👎"
+                styles="w-full bg-[#e64a78] mt-[10px]"
                 handleClick={handleDonate}
               />
             </div>

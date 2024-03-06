@@ -4,19 +4,25 @@ import dynamic from "next/dynamic"
 import { useRouter } from "next/router"
 
 import { money } from "@/assets"
+import { useStateContext } from "@/providers/state-context"
 import { checkIfImage } from "@/utils"
 
 import CustomButton from "@/components/CustomButton"
 import FormField from "@/components/FormFeild"
 import Loader from "@/components/Loader"
 
-// import { useStateContext } from "../context"
+export type News = {
+  title: string
+  description: string
+  image: string
+  story: string
+}
 
 const CreateCampaign = () => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  // const { createCampaign } = useStateContext()
-  const [form, setForm] = useState({
+  const { postNews } = useStateContext()
+  const [form, setForm] = useState<News>({
     title: "",
     description: "",
     image: "",
@@ -37,12 +43,20 @@ const CreateCampaign = () => {
       if (exists) {
         setIsLoading(true)
         console.log(form)
-        // await createCampaign({ ...form, target: ethers.utils.parseUnits(form.target, 18) })
-        const response = await axios.post("/api/ipfs", form)
-        const { url } = response.data
-        console.log(url)
-        setIsLoading(false)
-        // router.push("/")
+
+        try {
+          const response = await axios.post("/api/ipfs", form)
+          const { uri, url } = response.data.data
+          console.log({ uri, url })
+          const tx = await postNews(url)
+          console.log("Tx result: ", tx)
+          // setForm({ title: "", description: "", image: "", story: "" })
+          router.push("/")
+        } catch (error) {
+          console.log(error)
+        } finally {
+          setIsLoading(false)
+        }
       } else {
         alert("Provide valid image URL")
         setForm({ ...form, image: "" })
@@ -94,9 +108,9 @@ const CreateCampaign = () => {
           }}
         />
 
-        <div className="w-full flex justify-start items-center p-4 bg-[#8c6dfd] h-[120px] rounded-[10px]">
+        <div className="w-full flex justify-start items-center p-4 bg-[#8c6dfd] rounded-[10px]">
           <img src={money.src} alt="money" className="w-[40px] h-[40px] object-contain" />
-          <h4 className="font-epilogue font-bold text-[25px] text-white ml-[20px]">
+          <h4 className="font-epilogue font-bold md:text-[25px] text-white ml-[20px]">
             Heads up! Posting fake news may result in the loss of your stake amount!
           </h4>
         </div>

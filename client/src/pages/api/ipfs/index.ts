@@ -15,9 +15,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<APITypes>) => {
       secretKey: process.env.THIRDWEB_SECRET_KEY,
     })
     const uri = await storage.upload(body)
-    console.info(uri)
     const url = await storage.resolveScheme(uri)
-    console.info(url)
+    console.log({ uri, url })
 
     // // You can also download the data from the uri
     // const data = await storage.downloadJSON(uri)

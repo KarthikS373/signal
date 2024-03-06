@@ -17,6 +17,12 @@ export const checkIfImage = (url: string, callback: (result: boolean) => void) =
 
   if (img.complete) callback(true)
 
-  img.onload = () => callback(true)
   img.onerror = () => callback(false)
+}
+
+export const slug = (text: string) => {
+  return text
+    .toLowerCase()
+    .replace(/ /g, "-")
+    .replace(/[^\w-]+/g, "")
 }

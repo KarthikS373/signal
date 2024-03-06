@@ -30,8 +30,63 @@ module.exports = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            color: "#808191",
+            blockquote: {
+              borderLeftColor: theme("colors.gray.700"),
+              color: theme("colors.gray.100"),
+            },
+            h1: {
+              color: theme("colors.slate.200"),
+            },
+            h2: {
+              color: theme("colors.slate.200"),
+            },
+            h3: {
+              color: theme("colors.slate.200"),
+            },
+            h4: {
+              color: theme("colors.slate.200"),
+            },
+            h5: {
+              color: theme("colors.slate.200"),
+            },
+            h6: {
+              color: theme("colors.slate.200"),
+            },
+            a: {
+              color: theme("colors.indigo.500"),
+            },
+            code: {
+              padding: "3px 5px",
+              borderRadius: 5,
+              color: theme("colors.white"),
+              background: theme("colors.gray.800"),
+            },
+            "pre > code": {
+              background: "none",
+              padding: 0,
+            },
+            hr: { borderColor: theme("colors.gray.700") },
+            strong: { color: theme("colors.white") },
+            thead: {
+              color: theme("colors.gray.100"),
+            },
+            tbody: {
+              tr: {
+                borderBottomColor: theme("colors.gray.700"),
+              },
+            },
+            mark: {
+              background: theme("colors.yellow.100"),
+            },
+          },
+        },
+      }),
     },
   },
-  plugins: [require("@tailwindcss/typography")],
+  plugins: [require("@tailwindcss/typography"), require("@tailwindcss/forms")],
   darkMode: "class",
 }
