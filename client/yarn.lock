@@ -52,7 +52,7 @@
   dependencies:
     ckeditor5 "41.2.0"
 
-"@ckeditor/ckeditor5-build-classic@*", "@ckeditor/ckeditor5-build-classic@^41.2.0":
+"@ckeditor/ckeditor5-build-classic@^41.2.0":
   version "41.2.0"
   resolved "https://registry.yarnpkg.com/@ckeditor/ckeditor5-build-classic/-/ckeditor5-build-classic-41.2.0.tgz#a7efe6229286d7613f393280b017d9a68db50ca2"
   integrity sha512-6dfwRVyQpDuk5YQXzfkfYlVOqHUkVOFI5hznRLfbvQ133T62jZzH3xcZxD1DMAAalElKoVIMjv9zxd23f2hvSQ==
@@ -761,13 +761,6 @@
     cid-tool "^3.0.0"
     form-data "^4.0.0"
     uuid "^9.0.1"
-
-"@types/ckeditor__ckeditor5-build-classic@^37.0.0":
-  version "37.0.0"
-  resolved "https://registry.yarnpkg.com/@types/ckeditor__ckeditor5-build-classic/-/ckeditor__ckeditor5-build-classic-37.0.0.tgz#01830db65898bc0151a18d73cf9c217ecfed4004"
-  integrity sha512-jh/wCJ3EGkU6wqFp3wMD8KMYKQXDdV5Cw0c5EqX8QeZ1prPm24Wvazb46hq9LcAfWMGj5/HpuPFcV57dCZcTDg==
-  dependencies:
-    "@ckeditor/ckeditor5-build-classic" "*"
 
 "@types/json-schema@^7.0.12":
   version "7.0.12"

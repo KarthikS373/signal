@@ -38,7 +38,6 @@
   },
   "devDependencies": {
     "@keplr-wallet/types": "^0.12.70",
-    "@types/ckeditor__ckeditor5-build-classic": "^37.0.0",
     "@types/node": "^20.11.7",
     "@types/react": "18.2.19",
     "@types/react-dom": "18.2.7",
