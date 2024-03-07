@@ -38,8 +38,8 @@ const CampaignDetails = () => {
     setIsLoading(false)
   }
 
-  const upvotes = 53
-  const downvotes = 11
+  const [upvotes, setUpvotes] = useState(53)
+  const [downvotes, setDownvotes] = useState(11)
 
   const state = news?.find((item) => slug(item.title) === newsId)
   if (!state) return null
@@ -146,13 +146,13 @@ const CampaignDetails = () => {
                 btnType="button"
                 title="Upvote 👍"
                 styles="w-full bg-[#8c6dfd]"
-                handleClick={handleDonate}
+                handleClick={() => setUpvotes(upvotes + 1)}
               />
               <CustomButton
                 btnType="button"
                 title="Downvote 👎"
                 styles="w-full bg-[#e64a78] mt-[10px]"
-                handleClick={handleDonate}
+                handleClick={() => setDownvotes(downvotes + 1)}
               />
             </div>
           </div>
