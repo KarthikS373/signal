@@ -2,9 +2,10 @@ use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Respons
 
 use crate::actions::{
     create_creator_profile, create_news_entry, create_validator_profile, get_all_news_items,
-    get_config, get_news_item, get_news_of_creator, validate_news_entry, CreateCreatorProfileArgs,
-    CreateNewsArgs, CreateValidatorProfileArgs, GetNewsItemArgs, GetNewsOfCreatorArgs,
-    ValidateNewsArgs,
+    get_config, get_news_item, get_news_of_creator, update_creator_stake, validate_news_entry,
+    withdraw_creator_stake, CreateCreatorProfileArgs, CreateNewsArgs, CreateValidatorProfileArgs,
+    GetNewsItemArgs, GetNewsOfCreatorArgs, UpdateCreatorStakeArgs, ValidateNewsArgs,
+    WithdrawStakeArgs,
 };
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{config as configure, Config};
@@ -52,6 +53,16 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
         ExecuteMsg::CreateValidatorProfile {} => {
             deps.api.debug("create_validator_profile");
             create_validator_profile(deps, &env, &info, CreateValidatorProfileArgs {})
+        }
+        /*
+         */
+        ExecuteMsg::DepositStake {} => {
+            deps.api.debug("deposit_stake");
+            update_creator_stake(deps, &env, &info, UpdateCreatorStakeArgs {})
+        }
+        ExecuteMsg::WithdrawStake {} => {
+            deps.api.debug("withdraw_stake");
+            withdraw_creator_stake(deps, &env, &info, WithdrawStakeArgs {})
         }
         /*
          * route: create_news_entry

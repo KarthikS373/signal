@@ -345,11 +345,12 @@ pub fn get_news_of_creator(deps: Deps, env: &Env, args: GetNewsOfCreatorArgs) ->
 /// Payment actions
 
 /// Update the stake of a creator
+pub struct UpdateCreatorStakeArgs {}
 pub fn update_creator_stake(
     deps: DepsMut,
     env: &Env,
     info: &MessageInfo,
-    new_stake: Uint128,
+    args: UpdateCreatorStakeArgs,
 ) -> StdResult<Response> {
     let state = configure_read(deps.storage).load()?;
     let sent_amount = info
@@ -364,6 +365,10 @@ pub fn update_creator_stake(
     match amount {
         Ok(amount) => {
             let stake = amount.u128();
+
+            deps.api.debug(&format!("Stake: {}", stake));
+            deps.api.debug(&format!("Base Stake: {}", base_stake));
+
             if stake > base_stake + 1 || stake < base_stake - 1 {
                 return Err(StdError::generic_err(
                     "Stake does not meet the base requirement",
@@ -375,14 +380,20 @@ pub fn update_creator_stake(
         }
     }
 
+    let amount = amount.unwrap().u128();
+
     let mut profile = CREATOR_PROFILES
         .add_suffix(info.sender.as_bytes())
         .load(deps.storage)?;
+
+    deps.api.debug(&format!("Profile: {:?}", profile));
 
     // If already staked before, reject the transaction as we don't support more than one stake
     if profile.stake > Uint128::zero() {
         return Err(StdError::generic_err("Stake already exists"));
     }
+
+    deps.api.debug("Sending SCRT to contract");
 
     let contract_address = env.contract.address.clone();
     BankMsg::Send {
@@ -390,11 +401,13 @@ pub fn update_creator_stake(
         amount: coins(32, "scrt"),
     };
 
-    profile.stake += new_stake;
+    profile.stake = Uint128::from(profile.stake.u128() + amount);
 
     CREATOR_PROFILES
         .add_suffix(info.sender.as_bytes())
         .save(deps.storage, &profile)?;
+
+    deps.api.debug(&format!("Updated Profile: {:?}", profile));
 
     Ok(Response::new()
         .add_attribute("method", "update_creator_stake")
@@ -402,27 +415,27 @@ pub fn update_creator_stake(
 }
 
 /// Withdraw the stake of a creator
+pub struct WithdrawStakeArgs {}
 pub fn withdraw_creator_stake(
     deps: DepsMut,
     env: &Env,
     info: &MessageInfo,
-    amount: Uint128,
+    args: WithdrawStakeArgs,
 ) -> StdResult<Response> {
     let mut profile = CREATOR_PROFILES
         .add_suffix(info.sender.as_bytes())
         .load(deps.storage)?;
 
-    if profile.stake < amount {
+    if profile.stake < Uint128::zero() {
         return Err(StdError::generic_err("Insufficient stake"));
     }
 
-    // let contract_address = env.contract.address.clone();
     BankMsg::Send {
         to_address: info.sender.to_string(),
-        amount: coins(32, "scrt"),
+        amount: coins(profile.stake.u128(), "scrt"),
     };
 
-    profile.stake -= amount;
+    profile.stake = Uint128::zero();
 
     CREATOR_PROFILES
         .add_suffix(info.sender.as_bytes())

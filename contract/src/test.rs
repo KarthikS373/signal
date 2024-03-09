@@ -2,6 +2,7 @@
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::{
+        coins,
         testing::{mock_dependencies, mock_env, mock_info},
         Uint128,
     };
@@ -333,7 +334,324 @@ mod tests {
         );
     }
 
-    // Test 05-a: Check creating a news entry (without creating a creator profile)
+    // Test 05-a: Creator stake (more than the base requirement)
+    // - Creator: 1000
+    // - Base requirement: 100
+    #[test]
+    #[should_panic(expected = "Stake does not meet the base requirement")]
+    fn test_creator_stake_more_than_req() {
+        let mut deps = mock_dependencies();
+        let env = mock_env();
+        let creator_info = mock_info("creator", &[]);
+
+        // Initialise
+        let init_msg = InstantiateMsg {
+            entropy: "test_entropy".to_string(),
+            creator_base_stake: Uint128::new(100),
+            validator_base_stake: Uint128::new(50),
+        };
+        let init_res = instantiate(deps.as_mut(), env.clone(), creator_info.clone(), init_msg);
+
+        // Pre check 01: check if the contract can be instantiated properly
+        assert!(
+            init_res.is_ok(),
+            "Contract initialization failed: {:?}",
+            init_res
+        );
+
+        // Create creator profile
+        let res = execute(
+            deps.as_mut(),
+            env.clone(),
+            creator_info.clone(),
+            ExecuteMsg::CreateCreatorProfile {},
+        );
+
+        // Pre check 02: check if the contract can create a creator profile
+        assert!(res.is_ok(), "Failed to create profile: {:?}", res);
+
+        let stored_creator_profile = CREATOR_PROFILES
+            .add_suffix(creator_info.sender.as_bytes())
+            .load(&deps.storage)
+            .unwrap();
+
+        // Check 01: check if the creator profile stake is stored
+        assert_eq!(
+            stored_creator_profile.stake,
+            Uint128::zero(),
+            "Check if the creator profile stake is stored and is zero (intial value)"
+        );
+
+        let creator_info_with_stake = mock_info("creator", &coins(1000, "uscrt"));
+        // Update creator profile stake
+        let res = execute(
+            deps.as_mut(),
+            env.clone(),
+            creator_info_with_stake.clone(),
+            ExecuteMsg::DepositStake {},
+        );
+
+        // Check 02: check if the creator profile stake is updated
+        assert!(
+            res.is_ok(),
+            "Failed to update creator profile stake: {:?}",
+            res
+        );
+
+        let stored_creator_profile = CREATOR_PROFILES
+            .add_suffix(creator_info.sender.as_bytes())
+            .load(&deps.storage)
+            .unwrap();
+
+        // Check 03: check if the creator profile stake is updated
+        assert_eq!(
+            stored_creator_profile.stake,
+            Uint128::new(100),
+            "Check if the creator profile stake is updated"
+        );
+    }
+
+    // Test 05-b: Creator stake (less than the base requirement)
+    // - Creator: 10
+    // - Base requirement: 100
+    #[test]
+    #[should_panic(expected = "Stake does not meet the base requirement")]
+    fn test_creator_stake_less_than_req() {
+        let mut deps = mock_dependencies();
+        let env = mock_env();
+        let creator_info = mock_info("creator", &[]);
+
+        // Initialise
+        let init_msg = InstantiateMsg {
+            entropy: "test_entropy".to_string(),
+            creator_base_stake: Uint128::new(100),
+            validator_base_stake: Uint128::new(50),
+        };
+        let init_res = instantiate(deps.as_mut(), env.clone(), creator_info.clone(), init_msg);
+
+        // Pre check 01: check if the contract can be instantiated properly
+        assert!(
+            init_res.is_ok(),
+            "Contract initialization failed: {:?}",
+            init_res
+        );
+
+        // Create creator profile
+        let res = execute(
+            deps.as_mut(),
+            env.clone(),
+            creator_info.clone(),
+            ExecuteMsg::CreateCreatorProfile {},
+        );
+
+        // Pre check 02: check if the contract can create a creator profile
+        assert!(res.is_ok(), "Failed to create profile: {:?}", res);
+
+        let stored_creator_profile = CREATOR_PROFILES
+            .add_suffix(creator_info.sender.as_bytes())
+            .load(&deps.storage)
+            .unwrap();
+
+        // Check 01: check if the creator profile stake is stored
+        assert_eq!(
+            stored_creator_profile.stake,
+            Uint128::zero(),
+            "Check if the creator profile stake is stored and is zero (intial value)"
+        );
+
+        let creator_info_with_stake = mock_info("creator", &coins(10, "uscrt"));
+        // Update creator profile stake
+        let res = execute(
+            deps.as_mut(),
+            env.clone(),
+            creator_info_with_stake.clone(),
+            ExecuteMsg::DepositStake {},
+        );
+
+        // Check 02: check if the creator profile stake is updated
+        assert!(
+            res.is_ok(),
+            "Failed to update creator profile stake: {:?}",
+            res
+        );
+
+        let stored_creator_profile = CREATOR_PROFILES
+            .add_suffix(creator_info.sender.as_bytes())
+            .load(&deps.storage)
+            .unwrap();
+
+        // Check 03: check if the creator profile stake is updated
+        assert_eq!(
+            stored_creator_profile.stake,
+            Uint128::new(100),
+            "Check if the creator profile stake is updated"
+        );
+    }
+
+    // Test 05-c: Creator stake (wrong token)
+    // - Creator: 100 meme
+    // - Base requirement: 100 uscrt
+    #[test]
+    #[should_panic(expected = "No SCRT sent")]
+    fn test_creator_stake_wrong_denom() {
+        let mut deps = mock_dependencies();
+        let env = mock_env();
+        let creator_info = mock_info("creator", &[]);
+
+        // Initialise
+        let init_msg = InstantiateMsg {
+            entropy: "test_entropy".to_string(),
+            creator_base_stake: Uint128::new(100),
+            validator_base_stake: Uint128::new(50),
+        };
+        let init_res = instantiate(deps.as_mut(), env.clone(), creator_info.clone(), init_msg);
+
+        // Pre check 01: check if the contract can be instantiated properly
+        assert!(
+            init_res.is_ok(),
+            "Contract initialization failed: {:?}",
+            init_res
+        );
+
+        // Create creator profile
+        let res = execute(
+            deps.as_mut(),
+            env.clone(),
+            creator_info.clone(),
+            ExecuteMsg::CreateCreatorProfile {},
+        );
+
+        // Pre check 02: check if the contract can create a creator profile
+        assert!(res.is_ok(), "Failed to create profile: {:?}", res);
+
+        let stored_creator_profile = CREATOR_PROFILES
+            .add_suffix(creator_info.sender.as_bytes())
+            .load(&deps.storage)
+            .unwrap();
+
+        // Check 01: check if the creator profile stake is stored
+        assert_eq!(
+            stored_creator_profile.stake,
+            Uint128::zero(),
+            "Check if the creator profile stake is stored and is zero (intial value)"
+        );
+
+        let creator_info_with_stake = mock_info("creator", &coins(100, "meme"));
+        // Update creator profile stake
+        let res = execute(
+            deps.as_mut(),
+            env.clone(),
+            creator_info_with_stake.clone(),
+            ExecuteMsg::DepositStake {},
+        );
+
+        // Check 02: check if the creator profile stake is updated
+        assert!(
+            res.is_ok(),
+            "Failed to update creator profile stake: {:?}",
+            res
+        );
+
+        let stored_creator_profile = CREATOR_PROFILES
+            .add_suffix(creator_info.sender.as_bytes())
+            .load(&deps.storage)
+            .unwrap();
+
+        // Check 03: check if the creator profile stake is updated
+        assert_eq!(
+            stored_creator_profile.stake,
+            Uint128::new(100),
+            "Check if the creator profile stake is updated"
+        );
+    }
+
+    // Test 05-c: Creator stake (wrong token)
+    // - Creator: 100 meme
+    // - Base requirement: 100 uscrt
+    #[test]
+    fn test_creator_stake() {
+        let mut deps = mock_dependencies();
+        let env = mock_env();
+        let creator_info = mock_info("creator", &[]);
+
+        // Initialise
+        let init_msg = InstantiateMsg {
+            entropy: "test_entropy".to_string(),
+            creator_base_stake: Uint128::new(100),
+            validator_base_stake: Uint128::new(50),
+        };
+        let init_res = instantiate(deps.as_mut(), env.clone(), creator_info.clone(), init_msg);
+
+        // Pre check 01: check if the contract can be instantiated properly
+        assert!(
+            init_res.is_ok(),
+            "Contract initialization failed: {:?}",
+            init_res
+        );
+
+        // Create creator profile
+        let res = execute(
+            deps.as_mut(),
+            env.clone(),
+            creator_info.clone(),
+            ExecuteMsg::CreateCreatorProfile {},
+        );
+
+        // Pre check 02: check if the contract can create a creator profile
+        assert!(res.is_ok(), "Failed to create profile: {:?}", res);
+
+        let stored_creator_profile = CREATOR_PROFILES
+            .add_suffix(creator_info.sender.as_bytes())
+            .load(&deps.storage)
+            .unwrap();
+
+        // Check 01: check if the creator profile stake is stored
+        assert_eq!(
+            stored_creator_profile.stake,
+            Uint128::zero(),
+            "Check if the creator profile stake is stored and is zero (intial value)"
+        );
+
+        let creator_info_with_stake = mock_info("creator", &coins(100, "uscrt"));
+        // Update creator profile stake
+        let res = execute(
+            deps.as_mut(),
+            env.clone(),
+            creator_info_with_stake.clone(),
+            ExecuteMsg::DepositStake {},
+        );
+
+        // Check 02: check if the creator profile stake is updated
+        assert!(
+            res.is_ok(),
+            "Failed to update creator profile stake: {:?}",
+            res
+        );
+
+        let stored_creator_profile = CREATOR_PROFILES
+            .add_suffix(creator_info.sender.as_bytes())
+            .load(&deps.storage)
+            .unwrap();
+
+        // Check 03: check if the creator profile stake is updated
+        assert_eq!(
+            stored_creator_profile.stake,
+            Uint128::new(100),
+            "Check if the creator profile stake is updated"
+        );
+
+        // Check 04: check balance of contract address
+        let contract_address = env.contract.address.clone();
+        let contract_current_balance = deps.querier.query_balance(&contract_address).unwrap();
+
+        assert_eq!(
+            contract_current_balance[0].amount,
+            Uint128::new(100),
+            "Check if the contract balance is updated"
+        );
+    }
+
+    // Test 06-a: Check creating a news entry (without creating a creator profile)
     #[test]
     #[should_panic(expected = "User does not have a creator profile")]
     fn test_create_news_entry() {
@@ -389,7 +707,7 @@ mod tests {
         );
     }
 
-    // Test 05-b: Check creating a news entry (with a creator profile without stake)
+    // Test 06-b: Check creating a news entry (with a creator profile without stake)
     #[test]
     #[should_panic(expected = "Stake does not meet the base requirement")]
     fn test_create_news_entry_with_creator_profile() {
