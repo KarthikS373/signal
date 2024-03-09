@@ -50,7 +50,7 @@ const CreateCampaign = () => {
         try {
           const geminiResponse = await axios.post("/api/gemini", { form: form })
           console.log(geminiResponse.data)
-          const { fake, confidenceLevel, sources } = JSON.parse(geminiResponse.data.data.text)
+          const { fake, confidenceLevel, sources } = geminiResponse.data.data
           if (fake && confidenceLevel > 0.8) {
             alert(
               "The news you are trying to post is fake. Pls report the issue if you are having trouble."
