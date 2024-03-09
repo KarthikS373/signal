@@ -17,3 +17,6 @@ pub static NEWS_ITEMS_KEY: &[u8] = b"news_items";
 // Address mappings
 pub static ANONID_CREATORADDRESS_KEY: &[u8] = b"anonid_to_creator_address";
 pub static ANONID_VALIDATORADDRESS_KEY: &[u8] = b"aonid_to_validator_address";
+
+// Tipping
+pub static CREATOR_TIPS_KEY: &[u8] = b"creator_tips";

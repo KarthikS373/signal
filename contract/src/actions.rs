@@ -7,7 +7,7 @@ use crate::helpers::{generate_anonymous_id, generate_random_number};
 use crate::state::{
     config_read as configure_read, Config, CreatorProfile, NewsItem, NewsItemWithValidations,
     Validation, ValidatorProfile, ANONID_CREATORADDRESS, ANONID_VALIDATORADDRESS, CREATOR_PROFILES,
-    NEWS_ITEMS, NEWS_VALIDATIONS, VALIDATOR_PROFILES,
+    CREATOR_TIPS, NEWS_ITEMS, NEWS_VALIDATIONS, VALIDATOR_PROFILES,
 };
 
 /// POST ACTIONS
@@ -28,8 +28,8 @@ pub fn create_creator_profile(
     let profile = CreatorProfile {
         anonymous_id: anonymous_id.clone(),
         stake: Uint128::new(15000000000000000000), // TODO: Initial stake *should be* zero, but is hardcoded for now to match base stake
-        reputation: 0,          // Initial reputation is zero
-        warnings_received: 0,   // Initial warnings received is zero
+        reputation: 0,                             // Initial reputation is zero
+        warnings_received: 0,                      // Initial warnings received is zero
     };
 
     deps.api.debug(&format!("Profile: {:?}", profile));
@@ -444,4 +444,98 @@ pub fn withdraw_creator_stake(
     Ok(Response::new()
         .add_attribute("method", "withdraw_creator_stake")
         .add_attribute("creator", profile.anonymous_id))
+}
+
+/// TIPPING
+/// Tip a creator
+pub struct TipCreatorArgs {
+    pub creator_anonymous_id: String,
+}
+
+pub fn tip_creator(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    args: TipCreatorArgs,
+) -> StdResult<Response> {
+    let state = configure_read(deps.storage).load()?;
+    let sent_amount = info
+        .funds
+        .iter()
+        .find(|f| f.denom == "uscrt")
+        .map(|f| f.amount);
+
+    let amount = sent_amount.ok_or_else(|| "No SCRT sent");
+
+    match amount {
+        Ok(amount) => {
+            let stake = amount.u128();
+
+            if stake < state.creator_base_stake.u128() {
+                return Err(StdError::generic_err(
+                    "Stake does not meet the base requirement",
+                ));
+            }
+        }
+        Err(_) => {
+            return Err(StdError::generic_err("No SCRT sent"));
+        }
+    }
+
+    let tip = amount.unwrap().u128();
+    let current_tip = CREATOR_TIPS.get(deps.storage, &args.creator_anonymous_id);
+
+    let new_tip = match current_tip {
+        Some(current_tip) => current_tip + tip,
+        None => tip,
+    };
+
+    CREATOR_TIPS.insert(deps.storage, &args.creator_anonymous_id, &new_tip)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "tip_creator")
+        .add_attribute("creator", args.creator_anonymous_id)
+        .add_attribute("tip", new_tip.to_string()))
+}
+
+/// Creator withdraws the tip
+pub struct WithdrawTipArgs {
+    pub amount: u128,
+}
+pub fn withdraw_tip(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    args: WithdrawTipArgs,
+) -> StdResult<Response> {
+    let creator_profile = CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .load(deps.storage)?;
+
+    let available_tip = CREATOR_TIPS.get(deps.storage, &creator_profile.anonymous_id);
+
+    match available_tip {
+        Some(tip) => {
+            if tip < args.amount {
+                return Err(StdError::generic_err("Insufficient withdrawal amount"));
+            }
+
+            BankMsg::Send {
+                to_address: info.sender.to_string(),
+                amount: coins(args.amount, "scrt"),
+            };
+
+            let new_tip = tip - args.amount;
+
+            CREATOR_TIPS.insert(deps.storage, &creator_profile.anonymous_id, &new_tip)?;
+
+            Ok(Response::new()
+                .add_attribute("method", "withdraw_tip")
+                .add_attribute("creator", creator_profile.anonymous_id)
+                .add_attribute("tip", new_tip.to_string()))
+        }
+        None => {
+            return Err(StdError::generic_err("No tip found"));
+        }
+    }
 }

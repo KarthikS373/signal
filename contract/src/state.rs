@@ -7,8 +7,8 @@ use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
 
 use crate::constants::{
     ANONID_CREATORADDRESS_KEY, ANONID_VALIDATORADDRESS_KEY, CONFIG_KEY, CREATOR_KEY,
-    CREATOR_PROFILES_KEY, NEWS_ITEMS_KEY, NEWS_ITEM_KEY, VALIDATION_KEY, VALIDATOR_KEY,
-    VALIDATOR_PROFILES_KEY,
+    CREATOR_PROFILES_KEY, CREATOR_TIPS_KEY, NEWS_ITEMS_KEY, NEWS_ITEM_KEY, VALIDATION_KEY,
+    VALIDATOR_KEY, VALIDATOR_PROFILES_KEY,
 };
 
 // Config for the contract
@@ -39,6 +39,8 @@ pub static ANONID_CREATORADDRESS: Keymap<String, Addr> = Keymap::new(ANONID_CREA
 pub static ANONID_VALIDATORADDRESS: Keymap<String, Addr> = Keymap::new(ANONID_VALIDATORADDRESS_KEY);
 
 pub static NEWS_VALIDATIONS: Keymap<String, Validation> = Keymap::new(VALIDATION_KEY);
+
+pub static CREATOR_TIPS: Keymap<String, u128> = Keymap::new(CREATOR_TIPS_KEY);
 
 // Profile for content creators
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
