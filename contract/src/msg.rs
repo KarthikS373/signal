@@ -23,10 +23,8 @@ pub enum ExecuteMsg {
         vote: bool,
         comment: String,
     },
-    // UpdateStake {
-    //     new_stake: Uint128,
-    //     anonymous_id: String,
-    // },
+    DepositStake {},
+    WithdrawStake {},
     // UpdateReputation {
     //     new_reputation: u64,
     // },
