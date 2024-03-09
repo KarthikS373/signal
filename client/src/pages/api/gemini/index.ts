@@ -26,20 +26,28 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<APITypes>) => {
 
     const result = await model.generateContent(prompt)
     const response = await result.response
-    const text = response.text()
+    console.log(response)
+    if (Array.isArray(response.promptFeedback?.safetyRatings)) {
+      res.status(200).send({
+        message: "Skam detected!",
+        error: null,
+        data: { fake: true, confidenceLevel: 1, sources: response.promptFeedback },
+      })
+    }
+    const text = JSON.parse(response.text())
     console.log(text)
 
     res.status(200).send({
       message: "Validation completed!",
       error: null,
       data: {
-        text,
+        ...text,
       },
     })
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).send({
       message: "Failed to validate content",
-      error: err.message,
+      error: err instanceof Error ? err.message : "Something went wrong",
       data: null,
     })
   }
