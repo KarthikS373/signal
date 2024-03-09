@@ -8,7 +8,7 @@ const CustomButton = ({
 }: {
   btnType: "button" | "submit" | "reset"
   title: string
-  handleClick: () => void
+  handleClick?: () => void
   styles: string
 }) => {
   return (

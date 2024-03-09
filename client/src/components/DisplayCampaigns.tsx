@@ -1,9 +1,14 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
+import axios from "axios"
 import Image from "next/image"
 import { useRouter } from "next/router"
 import { v4 as uuidv4 } from "uuid"
 
 import { loader } from "@/assets"
+import { News } from "@/pages/post-news"
+import { useAuth } from "@/providers/auth-context"
+import { useStateContext } from "@/providers/state-context"
+import { slug } from "@/utils"
 
 import FundCard from "@/components/FundCard"
 
@@ -18,39 +23,57 @@ export interface Campaign {
   pId: number
 }
 
-const DisplayCampaigns = ({ title, isLoading }: { title: string; isLoading: boolean }) => {
-  const router = useRouter()
+export type getAllNewsResponse = {
+  creator: string
+  content: string
+}[]
 
-  const handleNavigate = (campaign: Campaign) => {
-    router.push(`/campaign-details/${campaign.title}`)
+const Displaynews = ({ title }: { title: string }) => {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const { getAllNews, news, setNews } = useStateContext()
+  const { userData } = useAuth()
+  useEffect(() => {
+    const fetchData = async () => {
+      if (userData.keplr?.walletClient) {
+        setIsLoading(true)
+
+        try {
+          const newsHashes = (await getAllNews()) as getAllNewsResponse
+          const newsResults = await Promise.all(
+            newsHashes
+              .filter((data) => data.content.startsWith("https://"))
+              .map((data) => axios.get(data.content))
+          )
+
+          setNews(newsResults.map((result) => result.data))
+        } catch (err) {
+          console.log(err)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+    fetchData()
+  }, [userData])
+
+  const handleNavigate = (campaign: News) => {
+    router.push(`/news/${slug(campaign.title)}`)
   }
 
-  const campaigns = [
-    {
-      owner: "0x25FCbC1e39Ca9b351FE907fC6F0E1788517E5890",
-      title: "scem ho gya",
-      description: "posa gya",
-      target: "0.000000000000000001",
-      deadline: 1707775714036,
-      amountCollected: "0.0",
-      image: "https://images.unsplash.com/photo-1706554596177-35b0a05a082e",
-      pId: 0,
-    },
-    {
-      owner: "0x25FCbC1e39Ca9b351FE907fC6F0E1788517E5890",
-      title: "crazy dave",
-      description: "need posa asap gib",
-      target: "0.5",
-      deadline: 1709164800000,
-      amountCollected: "0.01",
-      image: "https://images.unsplash.com/photo-1496449903678-68ddcb189a24",
-      pId: 1,
-    },
-  ]
+  if (!userData.keplr?.walletAddress) {
+    return (
+      <h1 className="font-epilogue font-semibold text-[18px] text-white text-left">
+        {"Pls connect your wallet >:("}
+      </h1>
+    )
+  }
+
   return (
     <div>
       <h1 className="font-epilogue font-semibold text-[18px] text-white text-left">
-        {title} ({campaigns.length})
+        {title} ({news?.length || 0})
       </h1>
 
       <div className="flex flex-wrap mt-[20px] gap-[26px]">
@@ -58,15 +81,15 @@ const DisplayCampaigns = ({ title, isLoading }: { title: string; isLoading: bool
           <Image src={loader} alt="loader" className="w-[100px] h-[100px] object-contain" />
         )}
 
-        {!isLoading && campaigns.length === 0 && (
+        {!isLoading && news?.length === 0 && (
           <p className="font-epilogue font-semibold text-[14px] leading-[30px] text-[#818183]">
-            You have not created any campigns yet
+            You have not posted any news yet
           </p>
         )}
 
         {!isLoading &&
-          campaigns.length > 0 &&
-          campaigns.map((campaign) => (
+          news?.length &&
+          news?.map((campaign) => (
             <FundCard
               key={uuidv4()}
               campaign={campaign}
@@ -78,4 +101,4 @@ const DisplayCampaigns = ({ title, isLoading }: { title: string; isLoading: bool
   )
 }
 
-export default DisplayCampaigns
+export default Displaynews

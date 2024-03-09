@@ -7,6 +7,7 @@ import menu from "./menu.svg"
 import money from "./money.svg"
 import payment from "./payment.svg"
 import profile from "./profile.svg"
+import scrt from "./scrt.svg"
 import search from "./search.svg"
 import sun from "./sun.svg"
 import thirdweb from "./thirdweb.png"
@@ -23,6 +24,7 @@ export {
   money,
   payment,
   profile,
+  scrt,
   search,
   sun,
   tagType,

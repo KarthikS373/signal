@@ -63,7 +63,9 @@ const instantiateContract = async (
 ) => {
   const initMsg = {
     entropy: generateRandomString(20),
-    creator_base_stake: String(15_000_000_000_000_000_000),
+    // creator_base_stake: String(0),
+    // validator_base_stake: String(0),
+    creator_base_stake: String(15_000_000_000_000_000_000), // TODO: Initial stake *should not be* zero, but is hardcoded for now to match the base stake
     validator_base_stake: String(8_000_000_000_000_000_000),
   };
   console.log(initMsg);
@@ -101,7 +103,7 @@ const queryContract = async (
       query_method = { get_profile_with_viewing_key: {} };
       break;
     case "news":
-      query_method = { get_news_item: {} };
+      query_method = { get_all_news_items: {} };
       break;
     case "validations":
       query_method = { get_validations: {} };
@@ -154,7 +156,15 @@ const executeContract = async (
       query_method = { create_validator_profile: {} };
       break;
     case "post_news":
-      query_method = { post_news: {} };
+      const contentHash = process.argv[6];
+      console.log(`content IPFS hash: ${contentHash}`);
+      if (!contentHash) throw new Error("Content IPFS hash is required");
+
+      query_method = {
+        post_news: {
+          content: process.argv[6],
+        },
+      };
       break;
     case "validate_news":
       query_method = { validate_news: {} };

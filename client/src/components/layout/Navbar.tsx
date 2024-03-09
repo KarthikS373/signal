@@ -2,7 +2,6 @@ import React, { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { SecretNetworkClient } from "secretjs"
 
 import { logo, menu, search, thirdweb } from "@/assets"
 import { navlinks } from "@/data"
@@ -15,85 +14,7 @@ const Navbar = () => {
   const [isActive, setIsActive] = useState("dashboard")
   const [toggleDrawer, setToggleDrawer] = useState(false)
 
-  const { loading, setLoading, userData, setUserData } = useAuth()
-
-  const CHAIN_ID = {
-    leap: "juno-1",
-    keplr: "pulsar-3",
-  }
-  const LCD = {
-    keplr: "https://api.pulsar3.scrttestnet.com",
-  }
-
-  const conectLeap = async () => {
-    try {
-      setLoading(true)
-      if (typeof window !== "undefined") {
-        // leap
-        const leapProvider = window.leap
-        if (!leapProvider) {
-          alert("Pls install Leap wallet. Thx!")
-        } else {
-          const key = await leapProvider.getKey(CHAIN_ID["leap"])
-          const { name, bech32Address } = key
-          setUserData((userData) => ({
-            ...userData,
-            leap: { walletName: name, walletAddress: bech32Address },
-          }))
-        }
-      }
-    } catch (err) {
-      console.log(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const connectKeplr = async () => {
-    try {
-      setLoading(true)
-      if (typeof window !== "undefined") {
-        // keplr
-        const keplr = window.keplr
-        if (!keplr) {
-          alert("Pls install Keplr wallet. Thx!")
-        } else {
-          // Enabling before using the Keplr is recommended.
-          // This method will ask the user whether or not to allow access if they haven't visited this website.
-          // Also, it will request user to unlock the wallet if the wallet is locked.
-          await keplr.enable(CHAIN_ID["keplr"])
-          const offlineSigner = window.getOfflineSignerOnlyAmino(CHAIN_ID["keplr"])
-
-          // You can get the address/public keys by `getAccounts` method.
-          // It can return the array of address/public key.
-          // But, currently, Keplr extension manages only one address/public key pair.
-          // XXX: This line is needed to set the sender address for SigningCosmosClient.
-          const accounts = await offlineSigner.getAccounts()
-          const secretjs = new SecretNetworkClient({
-            url: LCD["keplr"],
-            chainId: CHAIN_ID["keplr"],
-            wallet: offlineSigner,
-            walletAddress: accounts[0].address,
-            encryptionUtils: window.getEnigmaUtils(CHAIN_ID["keplr"]),
-          })
-          setUserData((userData) => ({
-            ...userData,
-            keplr: {
-              walletName: "SCRT",
-              walletAddress: accounts[0].address,
-              walletClient: secretjs,
-            },
-          }))
-        }
-      }
-    } catch (err) {
-      console.log(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  console.log({ loading, userData })
+  const { userData, connectKeplr, connectLeap } = useAuth()
 
   const address = userData.keplr?.walletAddress
 
@@ -103,7 +24,7 @@ const Navbar = () => {
         <input
           type="text"
           placeholder="Search for campaigns"
-          className="flex w-full font-epilogue font-normal text-[14px] placeholder:text-[#4b5264] text-white bg-transparent outline-none"
+          className="flex w-full font-epilogue font-normal text-[14px] placeholder:text-[#4b5264] text-white bg-transparent outline-none border-0 focus:ring-0 focus:border-0 focus:outline-none"
         />
 
         <div className="w-[72px] h-full rounded-[20px] bg-[#4acd8d] flex justify-center items-center cursor-pointer">
@@ -114,19 +35,13 @@ const Navbar = () => {
       <div className="sm:flex hidden flex-row justify-end gap-4">
         <CustomButton
           btnType="button"
-          title={address ? "Create a campaign" : "Connect"}
+          title={address ? "Post News" : "Connect"}
           styles={address ? "bg-[#1dc071]" : "bg-[#8c6dfd]"}
           handleClick={() => {
-            if (address) router.push("/create-campaign")
+            if (address) router.push("/post-news")
             else connectKeplr()
           }}
         />
-
-        <Link href="/profile">
-          <div className="w-[52px] h-[52px] rounded-full bg-[#2c2f32] flex justify-center items-center cursor-pointer">
-            <Image src={thirdweb} alt="user" className="w-[60%] h-[60%] object-contain" />
-          </div>
-        </Link>
       </div>
 
       {/* Small screen navigation */}
