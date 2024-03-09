@@ -15,7 +15,23 @@ const CampaignDetails = () => {
   const { newsId } = router.query
 
   const [isLoading, setIsLoading] = useState(false)
-  const [amount, setAmount] = useState("")
+
+  const [upvotes, setUpvotes] = useState(53)
+  const [downvotes, setDownvotes] = useState(11)
+
+  useEffect(() => {
+    const i1 = setInterval(() => {
+      setUpvotes((upvotes) => upvotes + Math.round(Math.random() * 50))
+    }, 20000)
+    const i2 = setInterval(() => {
+      setDownvotes((downvotes) => downvotes + Math.round(Math.random() * 50))
+    }, 20000)
+
+    return () => {
+      clearInterval(i1)
+      clearInterval(i2)
+    }
+  }, [])
 
   // const [donators, setDonators] = useState([])
   // const { donate, getDonations, contract, address } = useStateContext()
@@ -38,9 +54,6 @@ const CampaignDetails = () => {
     setIsLoading(false)
   }
 
-  const [upvotes, setUpvotes] = useState(53)
-  const [downvotes, setDownvotes] = useState(11)
-
   const state = news?.find((item) => slug(item.title) === newsId)
   if (!state) return null
 
@@ -57,8 +70,10 @@ const CampaignDetails = () => {
           />
           <div className="relative w-full h-[5px] bg-[#3a3a43] mt-2 rounded-full">
             <div
-              className="absolute h-full bg-[#4acd8d] rounded-full"
+              className="absolute h-full bg-[#4acd8d] rounded-full transition-all duration-300"
               style={{
+                backgroundColor:
+                  calculateBarPercentage(upvotes + downvotes, upvotes) > 50 ? "#4acd8d" : "#e64a78",
                 width: `${calculateBarPercentage(upvotes + downvotes, upvotes)}%`,
                 maxWidth: "100%",
               }}
@@ -67,7 +82,7 @@ const CampaignDetails = () => {
         </div>
 
         <div className="flex md:w-[150px] w-full flex-wrap justify-between gap-[30px]">
-          <CountBox title="Total ativity" value={"12.5k"} />
+          <CountBox title="Total ativity" value={"1255"} />
           <CountBox title="Upvotes" value={upvotes} />
           <CountBox title="Downvotes" value={downvotes} />
         </div>
@@ -123,17 +138,8 @@ const CampaignDetails = () => {
             <p className="font-epilogue fount-medium text-[20px] leading-[30px] text-center text-[#808191]">
               Found the article legit?
             </p>
-            <div className="mt-[30px]">
-              <input
-                type="number"
-                placeholder="ETH 0.1"
-                step="0.01"
-                className="w-full py-[10px] sm:px-[20px] px-[15px] outline-none border-[1px] border-[#3a3a43] bg-transparent font-epilogue text-white text-[18px] leading-[30px] placeholder:text-[#4b5264] rounded-[10px]"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-
-              <div className="my-[20px] p-4 bg-[#13131a] rounded-[10px]">
+            <div className="mt-[16px]">
+              <div className="p-4 bg-[#13131a] rounded-[10px]">
                 <h4 className="font-epilogue font-semibold text-[14px] leading-[22px] text-white">
                   Back it because you believe in it.
                 </h4>
@@ -145,13 +151,13 @@ const CampaignDetails = () => {
               <CustomButton
                 btnType="button"
                 title="Upvote 👍"
-                styles="w-full bg-[#8c6dfd]"
+                styles="w-full bg-[#8c6dfd] focus:ring-[#8c6dfd71] focus:ring-4"
                 handleClick={() => setUpvotes(upvotes + 1)}
               />
               <CustomButton
                 btnType="button"
                 title="Downvote 👎"
-                styles="w-full bg-[#e64a78] mt-[10px]"
+                styles="w-full bg-[#e64a78] focus:ring-[#e64a7871] focus:ring-4 mt-[16px]"
                 handleClick={() => setDownvotes(downvotes + 1)}
               />
             </div>

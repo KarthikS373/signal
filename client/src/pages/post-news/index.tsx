@@ -7,6 +7,7 @@ import { money } from "@/assets"
 import { useStateContext } from "@/providers/state-context"
 import { checkIfImage } from "@/utils"
 
+import MyDialog from "@/components/ConfirmationDialog"
 import CustomButton from "@/components/CustomButton"
 import FormField from "@/components/FormFeild"
 import Loader from "@/components/Loader"
@@ -20,6 +21,8 @@ export type News = {
 
 const CreateCampaign = () => {
   const router = useRouter()
+  let [isOpen, setIsOpen] = useState(true)
+
   const [isLoading, setIsLoading] = useState(false)
   const { postNews } = useStateContext()
   const [form, setForm] = useState<News>({
@@ -45,13 +48,20 @@ const CreateCampaign = () => {
         console.log(form)
 
         try {
-          const response = await axios.post("/api/ipfs", form)
-          const { uri, url } = response.data.data
-          console.log({ uri, url })
-          const tx = await postNews(url)
-          console.log("Tx result: ", tx)
-          // setForm({ title: "", description: "", image: "", story: "" })
-          router.push("/")
+          const geminiResponse = await axios.post("/api/gemini", { form: form })
+          console.log(geminiResponse.data)
+          const { fake, confidenceLevel, sources } = JSON.parse(geminiResponse.data.data.text)
+          if (fake && confidenceLevel > 0.8) {
+            alert("News is fake banmf")
+            return
+          }
+          // const response = await axios.post("/api/ipfs", form)
+          // const { uri, url } = response.data.data
+          // console.log({ uri, url })
+          // const tx = await postNews(url)
+          // console.log("Tx result: ", tx)
+          // // setForm({ title: "", description: "", image: "", story: "" })
+          // router.push("/")
         } catch (error) {
           console.log(error)
         } finally {
@@ -115,8 +125,21 @@ const CreateCampaign = () => {
           </h4>
         </div>
 
+        <label>
+          <input type="checkbox" required />
+          <span className="ml-4 font-epilogue font-medium text-[16px] leading-[22px] text-[#808191]">
+            This news is valid and genuine to the best of my knowledge.
+          </span>
+        </label>
+
         <div className="flex justify-center items-center mt-[40px]">
-          <CustomButton btnType="submit" title="Post your news" styles="bg-[#1dc071]" />
+          <CustomButton
+            btnType="button"
+            title="Post your news"
+            styles="bg-[#1dc071]"
+            handleClick={() => setIsOpen(true)}
+          />
+          <MyDialog isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
       </form>
     </div>
