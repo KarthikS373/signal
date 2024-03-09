@@ -17,17 +17,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<APITypes>) => {
     // For text-only input, use the gemini-pro model
     const model = genAI.getGenerativeModel({ model: "gemini-pro" })
 
-    const prompt = `Evaluate the following news article and evaluate whether it is fake or not. The news will be in the form:
-    {
-      title: string,
-      description: string,
-      image: string (url),
-      story: string (html markup)
-    }
+    const prompt = `Evaluate the following news and evaluate whether it is fake or not.
     Respond in following JSON format only (always with proper double quotes and wihout newline characters):
     {"fake": boolean (true or false), "confidenceLevel": number (0 to 1), "sources": string[] (list of resources considered to take the decision)}
     
-    ${form}
+    ${form.title}
     `
 
     const result = await model.generateContent(prompt)

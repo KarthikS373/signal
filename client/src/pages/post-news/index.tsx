@@ -52,16 +52,18 @@ const CreateCampaign = () => {
           console.log(geminiResponse.data)
           const { fake, confidenceLevel, sources } = JSON.parse(geminiResponse.data.data.text)
           if (fake && confidenceLevel > 0.8) {
-            alert("News is fake banmf")
+            alert(
+              "The news you are trying to post is fake. Pls report the issue if you are hacing trouble."
+            )
             return
           }
-          // const response = await axios.post("/api/ipfs", form)
-          // const { uri, url } = response.data.data
-          // console.log({ uri, url })
-          // const tx = await postNews(url)
-          // console.log("Tx result: ", tx)
-          // // setForm({ title: "", description: "", image: "", story: "" })
-          // router.push("/")
+          const response = await axios.post("/api/ipfs", form)
+          const { uri, url } = response.data.data
+          console.log({ uri, url })
+          const tx = await postNews(url)
+          console.log("Tx result: ", tx)
+          // setForm({ title: "", description: "", image: "", story: "" })
+          router.push("/")
         } catch (error) {
           console.log(error)
         } finally {
@@ -133,13 +135,7 @@ const CreateCampaign = () => {
         </label>
 
         <div className="flex justify-center items-center mt-[40px]">
-          <CustomButton
-            btnType="button"
-            title="Post your news"
-            styles="bg-[#1dc071]"
-            handleClick={() => setIsOpen(true)}
-          />
-          <MyDialog isOpen={isOpen} setIsOpen={setIsOpen} />
+          <CustomButton btnType="submit" title="Post your news" styles="bg-[#1dc071]" />
         </div>
       </form>
     </div>
