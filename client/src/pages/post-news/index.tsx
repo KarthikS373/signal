@@ -65,6 +65,9 @@ const CreateCampaign = () => {
           // setForm({ title: "", description: "", image: "", story: "" })
           router.push("/")
         } catch (error) {
+          alert(
+            "No creator profile associated with your account. Pls create one with your stake amount before continuing."
+          )
           console.log(error)
         } finally {
           setIsLoading(false)

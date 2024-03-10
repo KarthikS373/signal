@@ -46,6 +46,7 @@ const Displaynews = ({ title }: { title: string }) => {
               .filter((data) => data.content.startsWith("https://"))
               .map((data) => axios.get(data.content))
           )
+          console.log(newsHashes)
 
           setNews(newsResults.map((result) => result.data))
         } catch (err) {

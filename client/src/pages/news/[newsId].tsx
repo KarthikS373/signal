@@ -10,7 +10,7 @@ import CustomButton from "@/components/CustomButton"
 import Loader from "@/components/Loader"
 
 const CampaignDetails = () => {
-  const { news } = useStateContext()
+  const { news, tipCreator } = useStateContext()
   const router = useRouter()
   const { newsId } = router.query
 
@@ -33,8 +33,11 @@ const CampaignDetails = () => {
     }
   }, [])
 
-  const handleTip = () => {
-    alert("Tip the creator")
+  const handleTip = async () => {
+    await tipCreator("1", "5ff458433270893da736b827486a65b152a1c86725a244e6e47fbf565d7f4bf0")
+    alert(
+      `Successfully sent tip to user:5ff458433270893da736b827486a65b152a1c86725a244e6e47fbf565d7f4bf0`
+    )
   }
 
   // const [donators, setDonators] = useState([])
@@ -139,7 +142,7 @@ const CampaignDetails = () => {
           <CustomButton
             btnType="button"
             title="Tip creator"
-            styles="w-full bg-green-300 !text-black ring-0"
+            styles="w-full bg-green-400 !text-black ring-0"
             handleClick={() => handleTip()}
           />
           {/* <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">Rate it!</h4> */}
