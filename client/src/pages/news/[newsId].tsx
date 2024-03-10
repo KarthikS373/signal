@@ -33,6 +33,10 @@ const CampaignDetails = () => {
     }
   }, [])
 
+  const handleTip = () => {
+    alert("Tip the creator")
+  }
+
   // const [donators, setDonators] = useState([])
   // const { donate, getDonations, contract, address } = useStateContext()
   // const fetchDonators = async () => {
@@ -132,7 +136,13 @@ const CampaignDetails = () => {
         </div>
 
         <div className="flex-1">
-          <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">Rate it!</h4>
+          <CustomButton
+            btnType="button"
+            title="Tip creator"
+            styles="w-full bg-green-300 !text-black ring-0"
+            handleClick={() => handleTip()}
+          />
+          {/* <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">Rate it!</h4> */}
 
           <div className="mt-[20px] flex flex-col p-4 bg-[#1c1c24] rounded-[10px]">
             <p className="font-epilogue fount-medium text-[20px] leading-[30px] text-center text-[#808191]">

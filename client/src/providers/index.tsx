@@ -1,6 +1,7 @@
 import React from "react"
 
 import { AuthProvider } from "./auth-context"
+import { ShadeProvider } from "./shade-context"
 import { StateProvider } from "./state-context"
 
 interface ProvidersProps {
@@ -11,7 +12,9 @@ const Providers: React.FC<ProvidersProps> = ({ children }) => {
   return (
     <AuthProvider>
       <StateProvider>
-        <>{children}</>
+        <ShadeProvider>
+          <>{children}</>
+        </ShadeProvider>
       </StateProvider>
     </AuthProvider>
   )

@@ -28,7 +28,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<APITypes>) => {
     const response = await result.response
     console.log(response)
     if (Array.isArray(response.promptFeedback?.safetyRatings)) {
-      res.status(200).send({
+      return res.status(200).send({
         message: "Skam detected!",
         error: null,
         data: { fake: true, confidenceLevel: 1, sources: response.promptFeedback },
@@ -37,7 +37,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<APITypes>) => {
     const text = JSON.parse(response.text())
     console.log(text)
 
-    res.status(200).send({
+    return res.status(200).send({
       message: "Validation completed!",
       error: null,
       data: {
@@ -45,9 +45,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<APITypes>) => {
       },
     })
   } catch (err) {
-    res.status(500).send({
+    return res.status(500).send({
       message: "Failed to validate content",
-      error: err instanceof Error ? err.message : "Something went wrong",
+      error: new Error(err instanceof Error ? err.message : "Something went wrong"),
       data: null,
     })
   }

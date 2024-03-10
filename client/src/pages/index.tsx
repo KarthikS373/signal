@@ -9,7 +9,7 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = () => {
   return (
     <div>
-      <DisplayCampaigns title="All Campaigns" />
+      <DisplayCampaigns title="All News" />
     </div>
   )
 }

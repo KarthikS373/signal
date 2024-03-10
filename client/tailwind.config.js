@@ -17,8 +17,6 @@ module.exports = {
         warning: {},
         danger: {},
         info: {},
-        white: {},
-        black: {},
       },
       fontFamily: {
         epilogue: ["Epilogue", "sans-serif"],

@@ -5,9 +5,10 @@ use cosmwasm_std::{
 
 use crate::helpers::{generate_anonymous_id, generate_random_number};
 use crate::state::{
-    config_read as configure_read, Config, CreatorProfile, NewsItem, NewsItemWithValidations,
-    Validation, ValidatorProfile, ANONID_CREATORADDRESS, ANONID_VALIDATORADDRESS, CREATOR_PROFILES,
-    CREATOR_TIPS, NEWS_ITEMS, NEWS_VALIDATIONS, VALIDATOR_PROFILES,
+    config_read as configure_read, creator_profiles, Config, CreatorProfile, NewsItem,
+    NewsItemWithValidations, Validation, ValidatorProfile, ANONID_CREATORADDRESS,
+    ANONID_VALIDATORADDRESS, CREATOR_PROFILES, CREATOR_TIPS, NEWS_ITEMS, NEWS_VALIDATIONS,
+    VALIDATOR_PROFILES,
 };
 
 /// POST ACTIONS
@@ -454,8 +455,8 @@ pub struct TipCreatorArgs {
 
 pub fn tip_creator(
     deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
+    env: &Env,
+    info: &MessageInfo,
     args: TipCreatorArgs,
 ) -> StdResult<Response> {
     let state = configure_read(deps.storage).load()?;
@@ -504,8 +505,8 @@ pub struct WithdrawTipArgs {
 }
 pub fn withdraw_tip(
     deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
+    env: &Env,
+    info: &MessageInfo,
     args: WithdrawTipArgs,
 ) -> StdResult<Response> {
     let creator_profile = CREATOR_PROFILES
@@ -538,4 +539,96 @@ pub fn withdraw_tip(
             return Err(StdError::generic_err("No tip found"));
         }
     }
+}
+
+/// Lock up funds
+pub struct LockFundsArgs {}
+pub fn lock_funds(
+    deps: DepsMut,
+    env: &Env,
+    info: &MessageInfo,
+    args: LockFundsArgs,
+) -> StdResult<Response> {
+    let state = configure_read(deps.storage).load()?;
+    let base_stake = state.creator_base_stake.u128();
+
+    let sent_amount = info
+        .funds
+        .iter()
+        .find(|f| f.denom == "uscrt")
+        .map(|f| f.amount);
+
+    let amount = sent_amount.ok_or_else(|| "No SCRT sent");
+
+    match amount {
+        Ok(amount) => {
+            let stake = amount.u128();
+
+            if stake < base_stake {
+                return Err(StdError::generic_err("Insufficient stake"));
+            }
+        }
+        Err(_) => {
+            return Err(StdError::generic_err("No SCRT sent"));
+        }
+    }
+
+    let stake = amount.unwrap().u128();
+
+    let mut creator_profile = CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .load(deps.storage)?;
+    let contract_address = env.contract.address.clone();
+
+    BankMsg::Send {
+        to_address: contract_address.to_string(),
+        amount: coins(stake, "scrt"),
+    };
+
+    creator_profile.stake = Uint128::from(creator_profile.stake.u128() + stake);
+
+    CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .save(deps.storage, &creator_profile)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "lock_funds")
+        .add_attribute("amount", stake.to_string()))
+}
+
+/// Withdraw locked funds
+pub struct WithdrawLockedFundsArgs {}
+pub fn withdraw_locked_funds(
+    deps: DepsMut,
+    env: &Env,
+    info: &MessageInfo,
+    args: WithdrawLockedFundsArgs,
+) -> StdResult<Response> {
+    let mut creator_profile = CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .load(deps.storage)?;
+
+    let stake = creator_profile.stake.u128();
+
+    if creator_profile.stake < Uint128::from(stake) {
+        return Err(StdError::generic_err("Insufficient withdrawal amount"));
+    }
+
+    BankMsg::Send {
+        to_address: info.sender.to_string(),
+        amount: coins(stake, "scrt"),
+    };
+
+    let new_stake = creator_profile.stake.u128() - stake;
+
+    creator_profile.stake = Uint128::from(new_stake);
+
+    CREATOR_PROFILES
+        .add_suffix(info.sender.as_bytes())
+        .save(deps.storage, &creator_profile)?;
+
+    Ok(Response::new()
+        .add_attribute("method", "withdraw_locked_funds")
+        .add_attribute("creator", creator_profile.anonymous_id)
+        .add_attribute("amount", stake.to_string()))
 }

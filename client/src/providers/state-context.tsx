@@ -10,23 +10,135 @@ const StateContext = createContext<{
   postNews: (ipfsUrl: string) => Promise<any>
   news: News[] | null
   setNews: React.Dispatch<React.SetStateAction<News[] | null>>
+  createCreatorProfile: () => void
+  lockDeposit: (amount: string) => Promise<TxResponse>
+  unlockDeposit: (amount: string) => Promise<TxResponse>
+  tipCreator: (amount: string, creator: string) => Promise<TxResponse>
+  creatorWithdrawTip: (amount: string) => Promise<TxResponse>
 }>({
   getAllNews: async () => {},
   postNews: async (ipfsUrl: string) => {},
   news: null,
   setNews: () => {},
+  createCreatorProfile: () => {},
+  lockDeposit: async (amount: string) => ({}) as TxResponse,
+  unlockDeposit: async (amount: string) => ({}) as TxResponse,
+  tipCreator: async (amount: string, creator: string) => ({}) as TxResponse,
+  creatorWithdrawTip: async (amount: string) => ({}) as TxResponse,
 })
 
-const contract_address = "secret190a5htfnmm5a4a5wnznj56dk2ukvm5tc90shg8"
-const code_hash = "21065c3c46e332b8f0530a30f8374a8674e585a268ff0004e34c443ebd456c2f"
+const contract_address =
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "secret190a5htfnmm5a4a5wnznj56dk2ukvm5tc90shg8"
+const code_hash =
+  process.env.NEXT_PUBLIC_CODE_HASH ??
+  "21065c3c46e332b8f0530a30f8374a8674e585a268ff0004e34c443ebd456c2f"
 
 export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   const [news, setNews] = useState<News[] | null>(null)
   const { userData } = useAuth()
 
-  // TODO: Fix client not available
-  const client = userData.keplr?.walletClient!
-  const sender = userData.keplr?.walletAddress!
+  const client = userData.keplr?.walletClient
+  const sender = userData.keplr?.walletAddress
+
+  if (!client || !sender) {
+    return <>{children}</>
+  }
+
+  // const fetchRecentTransactions = async () => {}
+
+  const createCreatorProfile = () => {
+    client.query.compute.queryContract({
+      contract_address,
+      code_hash,
+      query: { create_creator_profile: {} },
+    })
+  }
+
+  const lockDeposit = (amount: string) => {
+    return client.tx.compute.executeContract(
+      {
+        sender,
+        contract_address,
+        code_hash,
+        msg: {
+          lock_funds: {
+            amount,
+          },
+        },
+        sent_funds: [
+          {
+            amount: amount,
+            denom: "uscrt",
+          },
+        ],
+      },
+      {
+        gasLimit: 100_000,
+      }
+    )
+  }
+
+  const unlockDeposit = (amount: string) => {
+    return client.tx.compute.executeContract(
+      {
+        sender,
+        contract_address,
+        code_hash,
+        msg: {
+          unlock_funds: {
+            amount,
+          },
+        },
+        sent_funds: [],
+      },
+      {
+        gasLimit: 100_000,
+      }
+    )
+  }
+
+  const tipCreator = (amount: string, creator: string) => {
+    return client.tx.compute.executeContract(
+      {
+        sender,
+        contract_address,
+        code_hash,
+        msg: {
+          tip_creator: {
+            creator,
+          },
+        },
+        sent_funds: [
+          {
+            amount,
+            denom: "uscrt",
+          },
+        ],
+      },
+      {
+        gasLimit: 100_000,
+      }
+    )
+  }
+
+  const creatorWithdrawTip = (amount: string) => {
+    return client.tx.compute.executeContract(
+      {
+        sender,
+        contract_address,
+        code_hash,
+        msg: {
+          withdraw_tip: {
+            amount,
+          },
+        },
+        sent_funds: [],
+      },
+      {
+        gasLimit: 100_000,
+      }
+    )
+  }
 
   const getAllNews = () =>
     client.query.compute.queryContract({
@@ -56,10 +168,15 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <StateContext.Provider
       value={{
+        createCreatorProfile,
+        lockDeposit,
+        unlockDeposit,
         getAllNews,
         postNews,
         news,
         setNews,
+        tipCreator,
+        creatorWithdrawTip,
       }}
     >
       {children}

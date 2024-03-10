@@ -25,6 +25,14 @@ pub enum ExecuteMsg {
     },
     DepositStake {},
     WithdrawStake {},
+    TipCreator {
+        creator_anonymous_id: String,
+    },
+    WithdrawTip {
+        amount: u128,
+    },
+    LockFunds {},
+    UnlockFunds {},
     // UpdateReputation {
     //     new_reputation: u64,
     // },

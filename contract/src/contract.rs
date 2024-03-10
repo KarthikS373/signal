@@ -2,10 +2,11 @@ use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Respons
 
 use crate::actions::{
     create_creator_profile, create_news_entry, create_validator_profile, get_all_news_items,
-    get_config, get_news_item, get_news_of_creator, update_creator_stake, validate_news_entry,
-    withdraw_creator_stake, CreateCreatorProfileArgs, CreateNewsArgs, CreateValidatorProfileArgs,
-    GetNewsItemArgs, GetNewsOfCreatorArgs, UpdateCreatorStakeArgs, ValidateNewsArgs,
-    WithdrawStakeArgs,
+    get_config, get_news_item, get_news_of_creator, lock_funds, tip_creator, update_creator_stake,
+    validate_news_entry, withdraw_creator_stake, withdraw_locked_funds, withdraw_tip,
+    CreateCreatorProfileArgs, CreateNewsArgs, CreateValidatorProfileArgs, GetNewsItemArgs,
+    GetNewsOfCreatorArgs, LockFundsArgs, TipCreatorArgs, UpdateCreatorStakeArgs, ValidateNewsArgs,
+    WithdrawLockedFundsArgs, WithdrawStakeArgs, WithdrawTipArgs,
 };
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{config as configure, Config};
@@ -98,6 +99,56 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
                     comment,
                 },
             )
+        }
+        /*
+         * route: tip_creator
+         * args: {
+         *  creator: String --> Anonymous ID of the creator to tip
+         *  amount: Uint128 --> Amount to tip
+         * }
+         */
+        ExecuteMsg::TipCreator {
+            creator_anonymous_id,
+        } => {
+            deps.api.debug("tip_creator");
+            tip_creator(
+                deps,
+                &env,
+                &info,
+                TipCreatorArgs {
+                    creator_anonymous_id,
+                },
+            )
+        }
+        /*
+         * route: withdraw_tip
+         * args: {
+         *   amount: Uint128 --> Amount to withdraw
+         * }
+         */
+        ExecuteMsg::WithdrawTip { amount } => {
+            deps.api.debug("withdraw_tip");
+            withdraw_tip(deps, &env, &info, WithdrawTipArgs { amount })
+        }
+        /*
+         * route: lock_funds
+         * args: {
+         *   amount: Uint128 --> Amount to lock
+         * }
+         */
+        ExecuteMsg::LockFunds {} => {
+            deps.api.debug("lock_funds");
+            lock_funds(deps, &env, &info, LockFundsArgs {})
+        }
+        /*
+         * route: unlock_funds
+         * args: {
+         *   amount: Uint128 --> Amount to unlock
+         * }
+         */
+        ExecuteMsg::UnlockFunds {} => {
+            deps.api.debug("unlock_funds");
+            withdraw_locked_funds(deps, &env, &info, WithdrawLockedFundsArgs {})
         }
     }
 }
