@@ -53,7 +53,7 @@ const CreateCampaign = () => {
           const { fake, confidenceLevel, sources } = geminiResponse.data.data
           if (fake && confidenceLevel > 0.8) {
             alert(
-              "The news you are trying to post is fake. Pls report the issue if you are having trouble."
+              "The news you are trying to post is fake OR it breaches our SAFETY STANDARDS. Pls report the issue if you are having trouble."
             )
             return
           }

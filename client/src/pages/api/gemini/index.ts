@@ -26,8 +26,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<APITypes>) => {
 
     const result = await model.generateContent(prompt)
     const response = await result.response
-    console.log(response)
-    if (Array.isArray(response.promptFeedback?.safetyRatings)) {
+    console.log(JSON.stringify(response, null, 2))
+
+    if (response.promptFeedback?.blockReason === "SAFETY") {
+      // if (Array.isArray(response.promptFeedback?.safetyRatings)) {
       return res.status(200).send({
         message: "Skam detected!",
         error: null,
