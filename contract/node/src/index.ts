@@ -63,9 +63,10 @@ const instantiateContract = async (
 ) => {
   const initMsg = {
     entropy: generateRandomString(20),
+    // TODO: Initial stake *should not be* zero, but is hardcoded for now to match the base stake
     // creator_base_stake: String(0),
     // validator_base_stake: String(0),
-    creator_base_stake: String(15_000_000_000_000_000_000), // TODO: Initial stake *should not be* zero, but is hardcoded for now to match the base stake
+    creator_base_stake: String(15_000_000_000_000_000_000),
     validator_base_stake: String(8_000_000_000_000_000_000),
   };
   console.log(initMsg);
