@@ -1,4 +1,4 @@
-# Hack Secret 2024
+# Signal
 
 The current media landscape faces a crisis of trust. Journalists fear exposure due to leaks, jeopardizing investigative reporting. Malicious actors exploit anonymity to spread misinformation disguised as legitimate news. The public passively consumes information, lacking tools to discern truth from falsehood. Signal envisions a future where journalism thrives in a safe, anonymous environment by using AI and community involvement. Signal gives community the chance to become active participants in the fight against fake news. We aim to cultivate a platform built on trust and transparency, where journalists can report freely and the public can access reliable information.
 
